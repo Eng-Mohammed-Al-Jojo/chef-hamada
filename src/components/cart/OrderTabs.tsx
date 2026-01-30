@@ -51,7 +51,7 @@ export default function OrderTabs({ onConfirm, firstInputRef, disableSend, order
         const dateStr = now.toLocaleDateString("ar-EG");
         const timeStr = now.toLocaleTimeString("ar-EG", { hour: '2-digit', minute: '2-digit' });
 
-        const list = items.map(i => `🔹 ${i.qty} × ${i.name} → ${Number(i.price) * i.qty}₪`).join("\n");
+        const list = items.map(i => `🔹 ${i.qty} × ${i.name} → ${i.selectedPrice * i.qty}₪`).join("\n");
 
         if (tab === "in") {
             if (!form.name || !form.table) {
@@ -62,7 +62,6 @@ export default function OrderTabs({ onConfirm, firstInputRef, disableSend, order
 ========================
 ${list}
 ========================
-
 💰 *الإجمالي:* ${totalPrice}₪
 ========================
 

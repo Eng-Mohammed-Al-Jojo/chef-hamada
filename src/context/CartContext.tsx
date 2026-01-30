@@ -5,14 +5,16 @@ import type { Item } from "../components/menu/Menu";
 
 export interface CartItem extends Item {
     qty: number;
+    selectedPrice: number;
+    priceKey: string;
 }
 
 interface CartContextType {
     items: CartItem[];
-    addItem: (item: Item) => void;
-    increase: (id: string) => void;
-    decrease: (id: string) => void;
-    removeItem: (id: string) => void;
+    addItem: (item: Item, price: number) => void;
+    increase: (priceKey: string) => void;
+    decrease: (priceKey: string) => void;
+    removeItem: (priceKey: string) => void;
     clearCart: () => void;
     totalItems: number;
     totalPrice: number;
@@ -27,38 +29,54 @@ const CartContext = createContext<CartContextType | null>(null);
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
 
-    /* إضافة صنف */
-    const addItem = (item: Item) => {
+    /* إضافة صنف بسعر محدد */
+    const addItem = (item: Item, price: number) => {
+        const key = `${item.id}-${price}`;
+
         setItems(prev => {
-            const found = prev.find(i => i.id === item.id);
+            const found = prev.find(i => i.priceKey === key);
+
             if (found) {
                 return prev.map(i =>
-                    i.id === item.id ? { ...i, qty: i.qty + 1 } : i
+                    i.priceKey === key ? { ...i, qty: i.qty + 1 } : i
                 );
             }
-            return [...prev, { ...item, qty: 1 }];
+
+            return [
+                ...prev,
+                {
+                    ...item,
+                    qty: 1,
+                    selectedPrice: price,
+                    priceKey: key,
+                },
+            ];
         });
     };
 
     /* زيادة */
-    const increase = (id: string) => {
+    const increase = (priceKey: string) => {
         setItems(prev =>
-            prev.map(i => (i.id === id ? { ...i, qty: i.qty + 1 } : i))
+            prev.map(i =>
+                i.priceKey === priceKey ? { ...i, qty: i.qty + 1 } : i
+            )
         );
     };
 
     /* نقصان */
-    const decrease = (id: string) => {
+    const decrease = (priceKey: string) => {
         setItems(prev =>
             prev
-                .map(i => (i.id === id ? { ...i, qty: i.qty - 1 } : i))
+                .map(i =>
+                    i.priceKey === priceKey ? { ...i, qty: i.qty - 1 } : i
+                )
                 .filter(i => i.qty > 0)
         );
     };
 
     /* حذف */
-    const removeItem = (id: string) => {
-        setItems(prev => prev.filter(i => i.id !== id));
+    const removeItem = (priceKey: string) => {
+        setItems(prev => prev.filter(i => i.priceKey !== priceKey));
     };
 
     /* تفريغ */
@@ -73,12 +91,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     /* مجموع السعر */
     const totalPrice = useMemo(
         () =>
-            items.reduce((sum, i) => {
-                const price = Number(
-                    String(i.price).split(",")[0].trim()
-                );
-                return sum + price * i.qty;
-            }, 0),
+            items.reduce(
+                (sum, i) => sum + i.selectedPrice * i.qty,
+                0
+            ),
         [items]
     );
 

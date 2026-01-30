@@ -9,13 +9,13 @@ export default function CartItemRow({ item }: { item: CartItem }) {
             <div className="flex-1">
                 <p className="font-bold">{item.name}</p>
                 <p className="text-sm text-[#F7F3E8]/70">
-                    {item.qty} × {item.price}₪
+                    {item.qty} × {item.selectedPrice}₪
                 </p>
             </div>
 
             <div className="flex items-center gap-2">
                 <button
-                    onClick={() => decrease(item.id)}
+                    onClick={() => decrease(item.priceKey)}
                     className="w-7 h-7 rounded-full bg-[#940D11] text-white"
                 >
                     −
@@ -26,14 +26,14 @@ export default function CartItemRow({ item }: { item: CartItem }) {
                 </span>
 
                 <button
-                    onClick={() => increase(item.id)}
+                    onClick={() => increase(item.priceKey)}
                     className="w-7 h-7 rounded-full bg-[#940D11] text-white"
                 >
                     +
                 </button>
 
                 <button
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => removeItem(item.priceKey)}
                     className="ml-2 text-[#F7F3E8]/70 hover:text-red-400"
                 >
                     <FaTrash />
