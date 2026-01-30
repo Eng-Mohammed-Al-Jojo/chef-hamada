@@ -72,7 +72,7 @@ export default function Footer() {
           <div className="flex items-center gap-2 text-lg font-[Cairo]">
             <FaMapMarkerAlt className="text-xl shrink-0" />
             <span className="text-right">
-              {footer.address || "غزة شارع الثورة مقابل تاج مول"}
+              {footer.address}
             </span>
           </div>
 
