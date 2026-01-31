@@ -251,10 +251,10 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
           <div className="flex flex-wrap gap-3 justify-center">
             <button
               onClick={() => setActiveCategory(null)}
-              className={`px-4 py-2 rounded-full font-bold transition font-[Cairo]
+              className={`rounded-2xl font-bold transition font-[Cairo]
               ${activeCategory === null
-                  ? "bg-[#FDB143] text-[#040309] text-lg"
-                  : "bg-[#F5F8F7] text-[#040309]/80 text-xs"
+                  ? "bg-[#FDB143] text-[#040309] text-md px-3 py-2"
+                  : "bg-[#F5F8F7] text-[#040309]/80 text-xs px-2 py-1"
                 }`}
             >
               جميع الأصناف
@@ -266,10 +266,10 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`px-4 py-2 rounded-full font-bold transition font-[Cairo]
+                  className={`rounded-2xl font-bold transition font-[Cairo]
                   ${activeCategory === cat.id
-                      ? "bg-[#FDB143] text-[#040309] text-sm"
-                      : "bg-[#F5F8F7] text-[#040309]/80 text-xs"
+                      ? "bg-[#FDB143] text-[#040309] text-md px-3 py-2"
+                      : "bg-[#F5F8F7] text-[#040309]/80 text-xs px-2 py-1"
                     }`}
                 >
                   {cat.name}

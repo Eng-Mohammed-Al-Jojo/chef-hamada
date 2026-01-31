@@ -213,3 +213,31 @@ body {
 .animate-floatSlow {
   animation: floatSlow 4s ease-in-out infinite;
 }
+
+/* أنيميشن Toast */
+@keyframes toast-show {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -150%) scale(0.9);
+  }
+
+  10% {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1.05);
+  }
+
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -150%) scale(0.95);
+  }
+}
+
+/* class لإستدعاء الانيميشن */
+.animate-toast-show {
+  animation: toast-show 1s ease-in-out forwards;
+}

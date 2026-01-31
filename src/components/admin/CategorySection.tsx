@@ -113,12 +113,12 @@ const SortableCategory: React.FC<{
 
           <button
             onClick={() => toggleAvailability(cat.id, cat.available ?? true)}
-            className={`relative w-10 h-5 rounded-full transition-all ${cat.available ? "bg-green-500" : "bg-gray-400"
-              }`}
+            className={`relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none
+    ${cat.available ? "bg-green-500" : "bg-gray-300"}`}
           >
             <span
-              className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${cat.available ? "translate-x-5 scale-105" : "translate-x-0.5"
-                }`}
+              className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300
+      ${cat.available ? "translate-x-7 scale-110" : "translate-x-0 scale-100"}`}
             />
           </button>
         </div>

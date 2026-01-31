@@ -17,7 +17,7 @@ export default function MenuPage() {
         min-h-screen flex flex-col
         bg-[url('/bg.jpg')] md:bg-[url('/bg4.jpg')]
         bg-cover bg-center bg-no-repeat
-        bg-fixed
+        bg-scroll md:bg-fixed
         text-[#F5F8F7]
         font-[Cairo]
         relative

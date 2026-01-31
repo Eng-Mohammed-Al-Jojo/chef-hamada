@@ -1,5 +1,7 @@
 import { type Item } from "./Menu";
+import { useState } from "react";
 import { useCart } from "../../context/CartContext";
+import { FaCheck } from "react-icons/fa";
 
 interface Props {
   item: Item;
@@ -10,135 +12,145 @@ export default function ItemRow({ item, orderSystem }: Props) {
   const prices = String(item.price).split(",");
   const unavailable = item.visible === false;
 
-  const { items, addItem, increase, decrease } = useCart();
+  const { addItem } = useCart();
+  const [addedPrice, setAddedPrice] = useState<number | null>(null);
+  const [showToast, setShowToast] = useState(false);
+
+  const hasIngredients = !!item.ingredients;
+
+  const handleAdd = (price: number) => {
+    addItem(item, price);
+    setAddedPrice(price);
+    setShowToast(true);
+
+    setTimeout(() => {
+      setAddedPrice(null);
+      setShowToast(false);
+    }, 1000); // 1 ثانية لظهور الصح و Toast
+  };
 
   return (
     <div
       className={`
-        relative rounded-2xl transition-transform duration-300
-        ${unavailable ? "opacity-50 cursor-not-allowed" : "hover:scale-[1.025]"}
+        relative w-full rounded-3xl transition-transform duration-200
+        ${unavailable ? "opacity-65 cursor-not-allowed" : "hover:scale-[1.02]"}
       `}
     >
-      {/* الخلفية مع عمق وفخامة */}
+      {/* Card الخلفية */}
       <div
         className={`
-          relative rounded-2xl p-4 sm:p-5
-          bg-linear-to-br from-[#0b0a0e]/90 to-[#040309]/95
-          border ${unavailable ? "border-gray-600/30" : "border-[#FDB143]/50"}
-          shadow-[0_5px_25px_rgba(0,0,0,0.5),inset_0_0_20px_rgba(253,177,67,0.08)]
-          font-[Almarai] font-bold overflow-hidden
-        `}
+        relative flex justify-between
+        ${hasIngredients ? "items-start" : "items-center"} 
+        bg-linear-to-br from-[#0b0a0e]/90 to-[#040309]/95
+        border ${unavailable ? "border-gray-500/40" : "border-[#FDB143]/50"}
+        shadow-[0_4px_15px_rgba(0,0,0,0.3),inset_0_0_10px_rgba(253,177,67,0.05)]
+        rounded-2xl p-4 sm:p-5 gap-4
+        font-[Almarai] font-bold
+        ${unavailable ? "opacity-100 cursor-not-allowed" : "hover:scale-[1.02] transition-transform duration-200"}
+      `}
       >
-        {/* Glow خارجي ديناميكي */}
+        {/* Glow خفيف */}
         {!unavailable && (
-          <div className="absolute -inset-1 rounded-3xl bg-linear-to-r from-[#FDB143]/20 via-[#FFD369]/30 to-[#FDB143]/20 blur-xl opacity-40 animate-pulse pointer-events-none" />
+          <div className="absolute -inset-1 rounded-3xl bg-linear-to-r from-[#FDB143]/10 via-[#FFD369]/20 to-[#FDB143]/10 blur-xl opacity-40 animate-pulse pointer-events-none" />
         )}
 
-        {/* ===== Grid: الاسم + الأسعار ===== */}
-        <div className="relative z-10 grid grid-cols-[1fr_auto] gap-4 sm:gap-5 items-start">
-          {/* ===== الاسم والمكونات ===== */}
-          <div className="min-w-0">
-            <h3
+        {/* الاسم + المكونات */}
+        <div className="flex-1 min-w-0 z-10">
+          <h3
+            className={`
+              text-md sm:text-lg md:text-xl font-extrabold leading-snug
+              ${unavailable
+                ? "line-through decoration-gray-400/70 text-gray-300"
+                : "text-[#FFD369] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+              }
+            `}
+          >
+            {item.name}
+          </h3>
+          {hasIngredients && (
+            <p
               className={`
-                text-md sm:text-lg md:text-xl font-extrabold leading-snug
-                ${unavailable
-                  ? "line-through decoration-gray-400/70 text-gray-300"
-                  : "text-[#FFD369] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"}
+                mt-1 text-xs sm:text-sm md:text-sm text-gray-300/80
+                ${unavailable ? "line-through" : ""}
               `}
             >
-              {item.name}
-            </h3>
-            {item.ingredients && (
-              <p
-                className={`
-                  mt-1 text-xs sm:text-sm md:text-sm text-gray-300/80
-                  ${unavailable ? "line-through" : ""}
-                `}
-              >
-                {item.ingredients}
-              </p>
-            )}
-          </div>
-
-          {/* ===== الأسعار والتحكم ===== */}
-          {orderSystem && (
-            <div className="flex flex-col gap-1 sm:gap-2 justify-end ">
-              {prices.map((p) => {
-                const price = Number(p.trim());
-                const key = `${item.id}-${price}`;
-                const cartItem = items.find(i => i.priceKey === key);
-
-                return (
-                  <div
-                    key={key}
-                    className={`
-                      flex items-center justify-between gap-2 px-2 sm:px-2 py-1 sm:py-1.5
-                      rounded-xl bg-black/40 border border-[#FDB143]/30 backdrop-blur-sm
-                      ${unavailable ? "line-through opacity-50" : "hover:bg-[#FDB143]/15"}
-                      transition-colors duration-200
-                    `}
-                  >
-                    {/* السعر */}
-                    <span className="text-sm sm:text-base md:text-base font-extrabold text-[#FFD369] drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
-                      {price}₪
-                    </span>
-
-                    {/* أزرار التحكم - تصميم جديد */}
-                    {!unavailable && (
-                      <div className="flex items-center justify-end gap-1 sm:gap-0.5 w-[70px] sm:w-[85px]">
-                        {!cartItem ? (
-                          <button
-                            onClick={() => addItem(item, price)}
-                            className="
-                              w-8 h-6 sm:w-9 sm:h-7
-                              bg-linear-to-r from-[#FFD369]/90 to-[#FDB143]/90
-                              rounded-lg text-black font-bold
-                              hover:scale-105 hover:shadow-md
-                              transition-all
-                            "
-                          >
-                            +
-                          </button>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => decrease(key)}
-                              className="
-                                w-7 h-6 sm:w-8 sm:h-7
-                                bg-linear-to-r from-[#FDB143]/80 to-[#FFD369]/80
-                                rounded-lg text-black font-bold
-                                hover:scale-105 hover:shadow-md
-                                transition-all
-                              "
-                            >
-                              −
-                            </button>
-                            <span className="w-5 sm:w-6 text-center font-extrabold text-[#FFD369] text-sm sm:text-base drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
-                              {cartItem.qty}
-                            </span>
-                            <button
-                              onClick={() => increase(key)}
-                              className="
-                                w-7 h-6 sm:w-8 sm:h-7
-                                bg-linear-to-r from-[#FFD369]/80 to-[#FDB143]/80
-                                rounded-lg text-black font-bold
-                                hover:scale-105 hover:shadow-md
-                                transition-all
-                              "
-                            >
-                              +
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+              {item.ingredients}
+            </p>
           )}
         </div>
+
+        {/* Box الأسعار + زر إضافة */}
+        <div
+          className={`
+            flex shrink-0 gap-2
+            ${orderSystem ? "flex-col" : "flex-row items-center"}
+          `}
+        >
+          {prices.map((p) => {
+            const price = Number(p.trim());
+            const isAdded = addedPrice === price;
+
+            return (
+              <div
+                key={price}
+                className={`
+                  flex items-center
+                  ${orderSystem && !unavailable
+                    ? "justify-center px-3 py-2 w-full"
+                    : "justify-center px-2 py-2 min-w-[60px] sm:min-w-[80px]"
+                  }
+                  gap-2 rounded-xl bg-black/40 border border-[#FDB143]/30
+                  backdrop-blur-sm transition-all duration-200
+                  ${unavailable ? "opacity-50 line-through " : ""}
+                `}
+              >
+                {/* السعر */}
+                <span
+                  className={`text-sm sm:text-base font-extrabold whitespace-nowrap
+                      ${unavailable ? "text-gray-300 line-through" : "text-[#FFD369]"}
+                    `}
+                >
+                  {price}₪
+                </span>
+
+
+                {/* زر الإضافة يتحول لصح عند الضغط */}
+                {orderSystem && !unavailable && (
+                  <button
+                    onClick={() => handleAdd(price)}
+                    className={`
+                      w-6 h-6 sm:w-7 sm:h-7
+                      flex items-center justify-center
+                      rounded-md font-bold text-black
+                      transition-all duration-1000
+                      ${isAdded
+                        ? "bg-[#FFD369] text-black"
+                        : "bg-linear-to-r from-[#FFD369]/90 to-[#FDB143]/90 hover:scale-105"
+                      }
+                    `}
+                  >
+                    {isAdded ? <FaCheck className="animate-pulse text-md" /> : <span className="text-lg md:text-xl">+</span>}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
+
+      {/* Toast احترافي */}
+      {showToast && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-full 
+                  bg-linear-to-r from-[#FFD369] to-[#FDB143] 
+                  text-black font-bold px-4 py-2 rounded-2xl 
+                  shadow-lg shadow-black/50
+                  flex items-center gap-2
+                  animate-toast-show pointer-events-none z-50">
+          <FaCheck className="text-black w-4 h-4" />
+          <span className="text-sm sm:text-base">تمت إضافة الصنف ، تفقد الطلب</span>
+        </div>
+      )}
+
     </div>
   );
 }

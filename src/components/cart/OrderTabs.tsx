@@ -15,26 +15,22 @@ interface OrderTabsProps {
     };
 }
 
-export default function OrderTabs({ onConfirm, firstInputRef, disableSend, orderSettings }: OrderTabsProps) {
+export default function OrderTabs({
+    onConfirm,
+    firstInputRef,
+    disableSend,
+    orderSettings,
+}: OrderTabsProps) {
     const { items, totalPrice } = useCart();
 
-    // تحديد التاب الافتراضي حسب الإعدادات
+    /* ================= Tabs ================= */
+
     const [tab, setTab] = useState<"in" | "out">(() => {
         if (orderSettings?.inRestaurant) return "in";
         if (orderSettings?.takeaway) return "out";
         return "in";
     });
 
-    const [form, setForm] = useState({
-        name: "",
-        table: "",
-        phone: "",
-        address: "",
-        notes: "",
-    });
-    const [error, setError] = useState<string | null>(null);
-
-    // تعديل التاب تلقائياً إذا الخدمة غير مفعلة
     useEffect(() => {
         if (!orderSettings) return;
 
@@ -44,20 +40,92 @@ export default function OrderTabs({ onConfirm, firstInputRef, disableSend, order
         if (tab === "out" && !orderSettings.takeaway && orderSettings.inRestaurant) {
             setTab("in");
         }
-    }, [orderSettings]);
+    }, [orderSettings, tab]);
+
+    /* ================= Form ================= */
+
+    const [form, setForm] = useState({
+        name: "",
+        table: "",
+        phone: "",
+        address: "",
+        notes: "",
+    });
+
+    const [error, setError] = useState<string | null>(null);
+
+    const isCurrentTabActive = () => {
+        if (tab === "in") return orderSettings?.inRestaurant;
+        if (tab === "out") return orderSettings?.takeaway;
+        return false;
+    };
+
+    /* ================= Validation ================= */
+
+    const validateForm = () => {
+        if (!isCurrentTabActive()) {
+            setError("الخدمة غير متاحة حالياً");
+            return false;
+        }
+
+        if (!form.name.trim()) {
+            setError("اسم الزبون مطلوب");
+            return false;
+        }
+
+        if (tab === "in") {
+            if (!form.table.trim()) {
+                setError("رقم الطاولة مطلوب");
+                return false;
+            }
+            if (isNaN(Number(form.table))) {
+                setError("رقم الطاولة يجب أن يكون رقماً");
+                return false;
+            }
+        }
+
+        if (tab === "out") {
+            if (!form.phone.trim()) {
+                setError("رقم الجوال مطلوب");
+                return false;
+            }
+            if (!/^\d{6,15}$/.test(form.phone)) {
+                setError("رقم الجوال غير صحيح");
+                return false;
+            }
+            if (!form.address.trim()) {
+                setError("العنوان مطلوب");
+                return false;
+            }
+        }
+
+        if (items.length === 0) {
+            setError("السلة فارغة");
+            return false;
+        }
+
+        setError(null);
+        return true;
+    };
+
+    /* ================= Message ================= */
 
     const buildMessage = () => {
         const now = new Date();
         const dateStr = now.toLocaleDateString("ar-EG");
-        const timeStr = now.toLocaleTimeString("ar-EG", { hour: '2-digit', minute: '2-digit' });
+        const timeStr = now.toLocaleTimeString("ar-EG", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
 
-        const list = items.map(i => `🔹 ${i.qty} × ${i.name} → ${i.selectedPrice * i.qty}₪`).join("\n");
+        const list = items
+            .map(
+                i =>
+                    `🔹 ${i.qty} × ${i.name} → ${i.selectedPrice * i.qty}₪`
+            )
+            .join("\n");
 
         if (tab === "in") {
-            if (!form.name || !form.table) {
-                setError("الرجاء إدخال اسم الزبون ورقم الطاولة");
-                return;
-            }
             return `✨ *طلب داخل المطعم* ✨
 ========================
 ${list}
@@ -76,10 +144,6 @@ ${list}
 ========================`;
         }
 
-        if (!form.name || !form.phone || !form.address) {
-            setError("الرجاء تعبئة جميع بيانات التيك أواي");
-            return;
-        }
         return `✨ *طلب تيك أواي* ✨
 ========================
 ${list}
@@ -99,98 +163,112 @@ ${list}
     };
 
     const submit = () => {
-        setError(null);
+        if (!validateForm()) return;
         const msg = buildMessage();
-        if (msg) onConfirm(msg, tab);
+        onConfirm(msg, tab);
     };
 
-    const isCurrentTabActive = () => {
-        if (tab === "in") return orderSettings?.inRestaurant;
-        if (tab === "out") return orderSettings?.takeaway;
-        return false;
-    };
+    /* ================= UI ================= */
 
     return (
         <div className="mt-6 space-y-4">
-            <div className="flex gap-2">
+            {/* Tabs */}
+            <div className="flex gap-3 justify-center flex-wrap">
+                {/* داخل المطعم */}
                 <button
                     onClick={() => orderSettings?.inRestaurant && setTab("in")}
                     disabled={!orderSettings?.inRestaurant}
-                    className={`flex-1 py-2 rounded-full font-bold flex items-center justify-center gap-2
-        ${tab === "in" ? "bg-[#FDB143]" : "bg-[#FDB143]/30"}
-        ${!orderSettings?.inRestaurant ? "opacity-50 cursor-not-allowed" : "hover:bg-[#FDB143]/80"}`}
+                    className={`
+      flex-1 sm:flex-auto flex items-center justify-center gap-2
+      py-3 px-4 rounded-2xl font-extrabold text-sm sm:text-base transition-all
+      duration-300 transform
+      ${tab === "in"
+                            ? "bg-linear-to-r from-[#FFD369] to-[#FDB143] text-black shadow-lg scale-105"
+                            : "bg-black/30 text-[#FFD369] hover:bg-[#FFD369]/20 hover:scale-105"}
+      ${!orderSettings?.inRestaurant ? "opacity-50 cursor-not-allowed" : ""}
+    `}
                 >
-                    <FaUtensils /> داخل المطعم
+                    <FaUtensils className="text-lg sm:text-xl" />
+                    داخل المطعم
                 </button>
 
+                {/* تيك أواي */}
                 <button
                     onClick={() => orderSettings?.takeaway && setTab("out")}
                     disabled={!orderSettings?.takeaway}
-                    className={`flex-1 py-2 rounded-full font-bold flex items-center justify-center gap-2
-        ${tab === "out" ? "bg-[#FDB143]" : "bg-[#FDB143]/30"}
-        ${!orderSettings?.takeaway ? "opacity-50 cursor-not-allowed" : "hover:bg-[#FDB143]/80"}`}
+                    className={`
+      flex-1 sm:flex-auto flex items-center justify-center gap-2
+      py-3 px-4 rounded-2xl font-extrabold text-sm sm:text-base transition-all
+      duration-300 transform
+      ${tab === "out"
+                            ? "bg-linear-to-r from-[#FFD369] to-[#FDB143] text-black shadow-lg scale-105"
+                            : "bg-black/30 text-[#FFD369] hover:bg-[#FFD369]/20 hover:scale-105"}
+      ${!orderSettings?.takeaway ? "opacity-50 cursor-not-allowed" : ""}
+    `}
                 >
-                    <FaMotorcycle className="text-2xl" /> تيك أواي
+                    <FaMotorcycle className="text-lg sm:text-xl" />
+                    تيك أواي
                 </button>
             </div>
 
-            {!isCurrentTabActive() && (
-                <div className="text-xs text-red-400 bg-red-900/20 p-2 rounded-xl text-center">
-                    {tab === "in" ? "الطلب داخل المطعم غير متاح حالياً" : "خدمة التيك أواي غير متاحة حالياً"}
-                </div>
-            )}
 
+            {/* Error */}
             {error && (
                 <div className="text-sm text-red-400 bg-red-900/20 p-2 rounded-xl text-center">
                     {error}
                 </div>
             )}
 
+            {/* Inputs */}
             <div className="space-y-2">
                 <input
                     ref={firstInputRef}
                     placeholder="اسم الزبون"
-                    className={`w-full p-2 rounded-xl bg-black/30 ${!isCurrentTabActive() ? "opacity-50 cursor-not-allowed" : ""}`}
-                    onChange={e => isCurrentTabActive() && setForm({ ...form, name: e.target.value })}
-                    disabled={!isCurrentTabActive()}
+                    className="w-full p-2 rounded-xl bg-black/30"
+                    value={form.name}
+                    onChange={e => setForm({ ...form, name: e.target.value })}
                 />
+
                 {tab === "in" && (
                     <input
                         placeholder="رقم الطاولة"
-                        className={`w-full p-2 rounded-xl bg-black/30 ${!orderSettings?.inRestaurant ? "opacity-50 cursor-not-allowed" : ""}`}
-                        onChange={e => orderSettings?.inRestaurant && setForm({ ...form, table: e.target.value })}
-                        disabled={!orderSettings?.inRestaurant}
+                        className="w-full p-2 rounded-xl bg-black/30"
+                        value={form.table}
+                        onChange={e => setForm({ ...form, table: e.target.value })}
                     />
                 )}
+
                 {tab === "out" && (
                     <>
                         <input
                             placeholder="رقم الجوال"
-                            className={`w-full p-2 rounded-xl bg-black/30 ${!orderSettings?.takeaway ? "opacity-50 cursor-not-allowed" : ""}`}
-                            onChange={e => orderSettings?.takeaway && setForm({ ...form, phone: e.target.value })}
-                            disabled={!orderSettings?.takeaway}
+                            className="w-full p-2 rounded-xl bg-black/30"
+                            value={form.phone}
+                            onChange={e => setForm({ ...form, phone: e.target.value })}
                         />
                         <input
                             placeholder="العنوان"
-                            className={`w-full p-2 rounded-xl bg-black/30 ${!orderSettings?.takeaway ? "opacity-50 cursor-not-allowed" : ""}`}
-                            onChange={e => orderSettings?.takeaway && setForm({ ...form, address: e.target.value })}
-                            disabled={!orderSettings?.takeaway}
+                            className="w-full p-2 rounded-xl bg-black/30"
+                            value={form.address}
+                            onChange={e => setForm({ ...form, address: e.target.value })}
                         />
                     </>
                 )}
+
                 <textarea
                     placeholder="ملاحظات (اختياري)"
-                    className={`w-full p-2 rounded-xl bg-black/30 ${!isCurrentTabActive() ? "opacity-50 cursor-not-allowed" : ""}`}
-                    onChange={e => isCurrentTabActive() && setForm({ ...form, notes: e.target.value })}
-                    disabled={!isCurrentTabActive()}
+                    className="w-full p-2 rounded-xl bg-black/30"
+                    value={form.notes}
+                    onChange={e => setForm({ ...form, notes: e.target.value })}
                 />
             </div>
 
+            {/* Submit */}
             <button
                 onClick={submit}
                 disabled={disableSend || !isCurrentTabActive()}
                 className={`w-full py-3 rounded-full bg-[#FDB143] font-bold hover:scale-105 transition
-      ${disableSend || !isCurrentTabActive() ? "opacity-50 cursor-not-allowed" : ""}`}
+        ${disableSend || !isCurrentTabActive() ? "opacity-50 cursor-not-allowed" : ""}`}
             >
                 تأكيد الطلب
             </button>

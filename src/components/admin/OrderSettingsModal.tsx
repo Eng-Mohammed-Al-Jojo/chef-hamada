@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ref, get, update } from "firebase/database";
+import { ref, update } from "firebase/database";
 import { db } from "../../firebase";
 
 /* ================= Toast ================= */
@@ -58,15 +58,18 @@ function ServiceCheckbox({
 /* ================= Modal ================= */
 export default function OrderSettingsModal({
     setShowOrderSettings,
+    orderSettings: initialSettings,
+    onSave,
 }: {
     setShowOrderSettings: (v: boolean) => void;
+    orderSettings: any;
+    onSave: (newSettings: any) => void;
 }) {
     const [orderSystem, setOrderSystem] = useState(true);
     const [inRestaurant, setInRestaurant] = useState(false);
     const [takeaway, setTakeaway] = useState(false);
     const [inPhone, setInPhone] = useState("");
     const [outPhone, setOutPhone] = useState("");
-
     const [complaintsWhatsapp, setComplaintsWhatsapp] = useState("");
     const [footer, setFooter] = useState({
         address: "",
@@ -81,54 +84,49 @@ export default function OrderSettingsModal({
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState<any>(null);
 
-    /* ===== Fetch ===== */
+    /* ===== Initialize state from Admin props ===== */
     useEffect(() => {
-        const fetchData = async () => {
-            const sys = await get(ref(db, "settings/orderSystem"));
-            setOrderSystem(sys.exists() ? sys.val() : true);
+        if (!initialSettings) return;
 
-            const order = await get(ref(db, "settings/orderSettings"));
-            if (order.exists()) {
-                const d = order.val();
-                setInRestaurant(!!d.inRestaurant);
-                setTakeaway(!!d.takeaway);
-                setInPhone(d.inPhone || "");
-                setOutPhone(d.outPhone || "");
-            }
+        setOrderSystem(initialSettings.orderSystem ?? true);
 
-            const comp = await get(ref(db, "settings/complaintsWhatsapp"));
-            if (comp.exists()) setComplaintsWhatsapp(comp.val());
+        const s = initialSettings.orderSettings ?? {};
+        setInRestaurant(!!s.inRestaurant);
+        setTakeaway(!!s.takeaway);
+        setInPhone(s.inPhone || "");
+        setOutPhone(s.outPhone || "");
 
-            const foot = await get(ref(db, "settings/footerInfo"));
-            if (foot.exists()) setFooter({ ...footer, ...foot.val() });
-
-            setLoading(false);
-        };
-
-        fetchData();
-    }, []);
+        setComplaintsWhatsapp(initialSettings.complaintsWhatsapp || "");
+        setFooter(initialSettings.footerInfo || {});
+        setLoading(false);
+    }, [initialSettings]);
 
     if (loading) return null;
 
     /* ===== Save with Validation ===== */
     const handleSave = async () => {
-        // ⚠️ Validation: check phone numbers
         if ((inRestaurant && inPhone.trim() === "") || (takeaway && outPhone.trim() === "")) {
             setToast({ type: "error", message: "❌ الرجاء إدخال رقم واتساب لكل خدمة مفعّلة" });
             setTimeout(() => setToast(null), 3000);
             return;
         }
 
+        const newSettings = {
+            orderSystem,
+            orderSettings: { inRestaurant, takeaway, inPhone, outPhone },
+            complaintsWhatsapp,
+            footerInfo: footer,
+        };
+
         try {
             setSaving(true);
-            await update(ref(db, "settings"), {
-                orderSystem,
-                orderSettings: { inRestaurant, takeaway, inPhone, outPhone },
-                complaintsWhatsapp,
-                footerInfo: footer,
-            });
+            await update(ref(db, "settings"), newSettings);
+
+            // 🔹 تحديث الـ state في Admin مباشرة
+            onSave?.(newSettings);
 
             setToast({ type: "success", message: "💾 تم حفظ الإعدادات بنجاح" });
+            setShowOrderSettings(false);
         } catch {
             setToast({ type: "error", message: "❌ فشل الحفظ" });
         } finally {
@@ -139,10 +137,9 @@ export default function OrderSettingsModal({
 
     return (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-3">
-            <div className="bg-[#231F20] w-full max-w-md max-h-[90vh]
-        rounded-3xl text-[#F7F3E8] shadow-2xl flex flex-col">
+            <div className="bg-[#231F20] w-full max-w-md max-h-[90vh] rounded-3xl text-[#F7F3E8] shadow-2xl flex flex-col">
 
-                {/* Header (ثابت) */}
+                {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
                     <h2 className="text-lg font-bold">⚙️ إعدادات النظام</h2>
                     <button onClick={() => setShowOrderSettings(false)} className="hover:text-red-400">
@@ -150,20 +147,16 @@ export default function OrderSettingsModal({
                     </button>
                 </div>
 
-                {/* Scrollable Content */}
+                {/* Content */}
                 <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-
-                    {/* Order System */}
                     <div className="bg-black/40 rounded-2xl px-4 py-3 flex justify-between items-center">
                         <span className="font-semibold text-sm">تفعيل نظام الطلب</span>
                         <button
                             onClick={() => setOrderSystem((p) => !p)}
-                            className={`w-12 h-6 rounded-full relative ${orderSystem ? "bg-green-500" : "bg-gray-600"
-                                }`}
+                            className={`w-12 h-6 rounded-full relative ${orderSystem ? "bg-green-500" : "bg-gray-600"}`}
                         >
                             <span
-                                className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition ${orderSystem ? "right-1" : "right-6"
-                                    }`}
+                                className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition ${orderSystem ? "right-1" : "right-6"}`}
                             />
                         </button>
                     </div>
@@ -191,9 +184,7 @@ export default function OrderSettingsModal({
                         <p className="font-bold text-sm">🚨 واتساب الشكاوى والاراء</p>
                         <input
                             value={complaintsWhatsapp}
-                            onChange={(e) =>
-                                setComplaintsWhatsapp(e.target.value.replace(/\D/g, ""))
-                            }
+                            onChange={(e) => setComplaintsWhatsapp(e.target.value.replace(/\D/g, ""))}
                             placeholder="059xxxxxxx"
                             className={inputClass}
                         />
@@ -202,42 +193,36 @@ export default function OrderSettingsModal({
                     {/* Footer Info */}
                     <div className={sectionClass}>
                         <p className="font-bold text-sm flex items-center gap-2">📍 معلومات الفوتر</p>
-
                         <input
                             placeholder="📍 العنوان"
                             value={footer.address}
                             onChange={(e) => setFooter({ ...footer, address: e.target.value })}
                             className={inputClass}
                         />
-
                         <input
                             placeholder="📞 الهاتف"
                             value={footer.phone}
                             onChange={(e) => setFooter({ ...footer, phone: e.target.value })}
                             className={inputClass}
                         />
-
                         <input
                             placeholder="💬 واتساب"
                             value={footer.whatsapp}
                             onChange={(e) => setFooter({ ...footer, whatsapp: e.target.value })}
                             className={inputClass}
                         />
-
                         <input
                             placeholder="Facebook"
                             value={footer.facebook}
                             onChange={(e) => setFooter({ ...footer, facebook: e.target.value })}
                             className={inputClass}
                         />
-
                         <input
                             placeholder="Instagram"
                             value={footer.instagram}
                             onChange={(e) => setFooter({ ...footer, instagram: e.target.value })}
                             className={inputClass}
                         />
-
                         <input
                             placeholder="TikTok"
                             value={footer.tiktok}
@@ -245,10 +230,9 @@ export default function OrderSettingsModal({
                             className={inputClass}
                         />
                     </div>
-
                 </div>
 
-                {/* Save (ثابت) */}
+                {/* Save */}
                 <div className="px-5 py-4 border-t border-white/10">
                     <button
                         onClick={handleSave}
