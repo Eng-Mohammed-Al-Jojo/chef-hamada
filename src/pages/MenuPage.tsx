@@ -14,21 +14,15 @@ export default function MenuPage() {
     <div
       dir="rtl"
       className="
-    min-h-screen flex flex-col
-    bg-[url('/bg.jpg')]
-    md:bg-[url('/bg4.jpg')]
-
-    bg-cover
-    bg-center
-    bg-no-repeat
-    bg-fixed md:bg-fixed
-
-    text-[#F5F8F7]
-    font-[Cairo]
-    relative
-  "
+        min-h-screen flex flex-col
+        bg-[url('/bg.jpg')] md:bg-[url('/bg4.jpg')]
+        bg-cover bg-center bg-no-repeat
+        bg-scroll md:bg-fixed
+        text-[#F5F8F7]
+        font-[Cairo]
+        relative
+      "
     >
-
       {/* Overlay */}
       <div className="absolute inset-0 bg-[#040309] opacity-50 backdrop-blur-sm pointer-events-none"></div>
 
