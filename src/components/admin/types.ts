@@ -22,8 +22,8 @@ export interface Category {
 }
 
 export interface Item {
-  id(id: any, visible: boolean): void;
-  image: any;
+  id: string;           // ✅
+  image?: string;       // ✅ صورة اختيارية (رابط)
   name: string;
   price: string;
   priceTw?: string;
@@ -31,7 +31,6 @@ export interface Item {
   categoryId: string;
   visible: boolean;
   createdAt: number;
-
   featured?: string;
   star?: boolean; // ✅ جديد
 }
