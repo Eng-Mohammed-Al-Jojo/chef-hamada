@@ -86,7 +86,6 @@ export default function Admin() {
   }, [authOk]);
 
   // ================= ORDER SETTINGS INITIALIZE =================
-  // ================= ORDER SETTINGS INITIALIZE =================
   useEffect(() => {
     if (!authOk) return;
 

@@ -70,10 +70,14 @@ export default function Footer() {
         {/* يمين – الموقع */}
         <div className="flex flex-col md:items-end items-center space-y-3 w-full md:w-auto">
           <div className="flex items-center gap-2 text-lg font-[Cairo]">
-            <FaMapMarkerAlt className="text-xl shrink-0" />
-            <span className="text-right">
-              {footer.address}
-            </span>
+            {footer.address && (
+              <>
+                <FaMapMarkerAlt className="text-xl shrink-0" />
+                <span className="text-right">
+                  {footer.address}
+                </span>
+              </>
+            )}
           </div>
 
 
@@ -110,9 +114,10 @@ export default function Footer() {
             )}
           </div>
           {/* Feedback Button */}
-          <button
-            onClick={() => setShowFeedbackModal(true)}
-            className="
+          {showFeedbackModal && (
+            <button
+              onClick={() => setShowFeedbackModal(true)}
+              className="
                 mt-4 w-full max-w-xs flex items-center justify-center gap-2             
                 bg-[#FDB143] text-[#040309]
                 rounded-2xl
@@ -121,10 +126,11 @@ export default function Footer() {
                 hover:scale-105 hover:shadow-xl
                 transition-all duration-300
               "
-          >
-            <FaCommentDots className="w-6 h-6 animate-pulse" />
-            <span className="text-sm font-semibold">أرسل تقييمك</span>
-          </button>
+            >
+              <FaCommentDots className="w-6 h-6 animate-pulse" />
+              <span className="text-sm font-semibold">أرسل تقييمك</span>
+            </button>
+          )}
         </div>
 
         {/* يسار – توقيع المهندس */}

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiPlus, FiTrash2, FiEdit, FiCheck, FiMove } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiEdit, FiCheck } from "react-icons/fi";
 import { db } from "../../firebase";
 import { ref, update } from "firebase/database";
 
@@ -22,6 +22,7 @@ import {
 
 import { CSS } from "@dnd-kit/utilities";
 import type { PopupState, Category } from "./types";
+import { HiChevronDown, HiOutlineArrowsUpDown } from "react-icons/hi2";
 
 interface Props {
   categories: Record<string, Category>;
@@ -66,61 +67,80 @@ const SortableCategory: React.FC<{
         ref={setNodeRef}
         style={style}
         {...attributes}
-        className="bg-gray-100 px-3 py-2 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+        className="
+        relative
+        bg-white
+        rounded-2xl
+        shadow-sm
+        flex
+        overflow-hidden
+      "
       >
-        {/* جهة اليسار: أيقونة السحب + الاسم */}
-        <div className="flex items-center gap-2 flex-1">
-          <div
-            {...listeners}
-            className="cursor-grab select-none p-1 rounded-md bg-gray-200"
-          >
-            <FiMove size={18} className="text-gray-600" />
-          </div>
+        {/* Drag Rail */}
+        <div
+          {...listeners}
+          className="
+          cursor-grab select-none
+          bg-linear-to-b from-gray-300 to-gray-200
+          w-12 sm:w-10
+          flex items-center justify-center
+          active:scale-95
+          transition
+        "
+        >
+          <HiOutlineArrowsUpDown className="w-5 h-5 md:w-6 md:h-6 text-gray-700" />
+        </div>
 
+        {/* المحتوى */}
+        <div className="flex-1 p-2 flex flex-col gap-2">
           {editingId === cat.id ? (
-            <>
+            <div className="flex items-center gap-2">
               <input
-                className="flex-1 p-1 border rounded-xl"
+                className="flex-1 p-2 border rounded-xl"
                 value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
               />
               <button
                 onClick={() => saveEdit(cat.id)}
-                className="text-green-600 hover:text-green-800 ml-2"
+                className="text-green-600 p-2"
               >
                 <FiCheck />
               </button>
-            </>
+            </div>
           ) : (
-            <span className="flex-1 font-medium">{cat.name}</span>
+            <span className="text-lg font-bold text-gray-800">
+              {cat.name}
+            </span>
           )}
-        </div>
 
-        {/* جهة اليمين: تعديل، حذف، سويتش */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <button
-            onClick={() => startEditing(cat.id, cat.name)}
-            className="text-blue-600 hover:text-blue-800 p-1 rounded-md"
-          >
-            <FiEdit />
-          </button>
-          <button
-            onClick={() => setPopup({ type: "deleteCategory", id: cat.id })}
-            className="text-red-600 hover:text-red-800 p-1 rounded-md"
-          >
-            <FiTrash2 />
-          </button>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => startEditing(cat.id, cat.name)}
+                className="text-blue-600 p-2 rounded-xl hover:bg-blue-50 transition"
+              >
+                <FiEdit />
+              </button>
 
-          <button
-            onClick={() => toggleAvailability(cat.id, cat.available ?? true)}
-            className={`relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none
-    ${cat.available ? "bg-green-500" : "bg-gray-300"}`}
-          >
-            <span
-              className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300
-      ${cat.available ? "translate-x-7 scale-110" : "translate-x-0 scale-100"}`}
-            />
-          </button>
+              <button
+                onClick={() => setPopup({ type: "deleteCategory", id: cat.id })}
+                className="text-red-600 p-2 rounded-xl hover:bg-red-50 transition"
+              >
+                <FiTrash2 />
+              </button>
+            </div>
+
+            <button
+              onClick={() => toggleAvailability(cat.id, cat.available ?? true)}
+              className={`relative w-14 h-7 rounded-full transition-colors
+              ${cat.available ? "bg-green-500" : "bg-gray-300"}`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all
+                ${cat.available ? "translate-x-7 scale-110" : ""}`}
+              />
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -137,17 +157,16 @@ const CategorySection: React.FC<Props> = ({
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempName, setTempName] = useState("");
+  const [openCategories, setOpenCategories] = useState(true);
 
-  const startEditing = (id: string, currentName: string) => {
+  const startEditing = (id: string, name: string) => {
     setEditingId(id);
-    setTempName(currentName);
+    setTempName(name);
   };
 
   const saveEdit = async (id: string) => {
     if (!tempName.trim()) return;
-    await update(ref(db, `categories/${id}`), {
-      name: tempName.trim(),
-    });
+    await update(ref(db, `categories/${id}`), { name: tempName.trim() });
     setEditingId(null);
     setTempName("");
   };
@@ -158,18 +177,17 @@ const CategorySection: React.FC<Props> = ({
     });
   };
 
-  /* تحويل object إلى array وترتيب حسب order */
   const categoriesArray = Object.entries(categories)
     .map(([id, cat]) => ({ ...cat, id }))
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-  /* الحساسات للكمبيوتر + الجوال */
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } })
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 150, tolerance: 5 },
+    })
   );
 
-  /* عند نهاية السحب */
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -179,7 +197,6 @@ const CategorySection: React.FC<Props> = ({
 
     const newArray = arrayMove(categoriesArray, oldIndex, newIndex);
 
-    // تحديث order في Firebase دفعة واحدة
     const updates: Record<string, any> = {};
     newArray.forEach((cat, index) => {
       updates[`categories/${cat.id}/order`] = index;
@@ -204,6 +221,8 @@ const CategorySection: React.FC<Props> = ({
         >
           <h2 className="font-bold mb-3 text-2xl">الأقسام</h2>
 
+
+
           {/* إضافة قسم */}
           <div className="flex gap-2 flex-wrap mb-4">
             <input
@@ -219,22 +238,59 @@ const CategorySection: React.FC<Props> = ({
               <FiPlus className="text-xl" />
             </button>
           </div>
+          {/* زر عرض الأقسام */}
+          <button
+            onClick={() => setOpenCategories((p) => !p)}
+            className="
+              w-full mb-4
+              flex items-center justify-between
+              px-4 py-3
+              bg-gray-100
+              rounded-xl
+              font-bold
+              hover:bg-gray-200
+              transition
+            "
+          >
+            <span>عرض الأقسام</span>
 
-          {/* عرض الأقسام */}
-          <div className="flex flex-col gap-2">
-            {categoriesArray.map((cat) => (
-              <SortableCategory
-                key={cat.id}
-                cat={cat}
-                editingId={editingId}
-                tempName={tempName}
-                setTempName={setTempName}
-                saveEdit={saveEdit}
-                startEditing={startEditing}
-                toggleAvailability={toggleAvailability}
-                setPopup={setPopup}
+            <div className="flex items-center gap-2">
+              <span className="bg-[#FDB143] text-white text-sm px-2 py-0.5 rounded-full">
+                {categoriesArray.length}
+              </span>
+
+              <HiChevronDown
+                className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${openCategories ? "rotate-180" : "rotate-0"
+                  }`}
               />
-            ))}
+            </div>
+          </button>
+
+          {/* Accordion Animation */}
+          <div
+            className={`
+              overflow-hidden
+              transition-all duration-500 ease-in-out
+              ${openCategories
+                ? "max-h-[3000px] opacity-100 scale-100"
+                : "max-h-0 opacity-0 scale-[0.98]"}
+            `}
+          >
+            <div className="flex flex-col gap-2 pt-2">
+              {categoriesArray.map((cat) => (
+                <SortableCategory
+                  key={cat.id}
+                  cat={cat}
+                  editingId={editingId}
+                  tempName={tempName}
+                  setTempName={setTempName}
+                  saveEdit={saveEdit}
+                  startEditing={startEditing}
+                  toggleAvailability={toggleAvailability}
+                  setPopup={setPopup}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </SortableContext>

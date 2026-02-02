@@ -34,5 +34,4 @@ export interface Item {
 
   featured?: string;
   star?: boolean; // ✅ جديد
-
 }
