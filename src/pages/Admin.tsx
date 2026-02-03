@@ -248,7 +248,7 @@ export default function Admin() {
       { header: "المكونات", key: "ingredients", width: 40 },
       { header: "متوفر", key: "visible", width: 10 },
       { header: "مميزة", key: "star", width: 10 },
-      { header: "صورة مميزة", key: "featured", width: 25 },
+      { header: "صورة", key: "image", width: 25 },
     ];
 
     Object.values(items).forEach((item: any) => {
@@ -261,7 +261,7 @@ export default function Admin() {
         ingredients: item.ingredients || "",
         visible: item.visible ? "نعم" : "لا",
         star: item.star ? "⭐" : "",
-        featured: item.featured || "",
+        image: item.image || "",
       });
     });
 
@@ -309,7 +309,7 @@ export default function Admin() {
           ingredients: row.getCell(5).value?.toString().trim() || "",
           visible: row.getCell(6).value?.toString().trim().toLowerCase() === "نعم",
           star: row.getCell(7).value?.toString().trim() === "⭐",
-          featured: row.getCell(8).value?.toString().trim() || "",
+          image: row.getCell(8).value?.toString().trim() || "",
         });
       });
 
@@ -386,7 +386,7 @@ export default function Admin() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "full-data.json";
+    a.download = "menu.json";
     a.click();
     URL.revokeObjectURL(url);
 

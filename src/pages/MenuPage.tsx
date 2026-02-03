@@ -7,8 +7,8 @@ import FeaturedModal from "../components/menu/FeaturedModal";
 
 export default function MenuPage() {
   const [showFeaturedModal, setShowFeaturedModal] = useState(false);
-  const [loading, setLoading] = useState(true); // حالة التحميل
-  const [hasFeatured, setHasFeatured] = useState(false); // جديد: هل يوجد أصناف مميزة
+  const [loading, setLoading] = useState(true);
+  const [hasFeatured, setHasFeatured] = useState(false);
 
   return (
     <div
@@ -24,7 +24,7 @@ export default function MenuPage() {
       "
     >
       {/* Overlay */}
-      <div className="absolute inset-0 bg-[#040309] opacity-50 backdrop-blur-sm pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[#040309] opacity-50 md:backdrop-blur-sm pointer-events-none"></div>
 
       {/* Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
@@ -39,7 +39,6 @@ export default function MenuPage() {
 
         {/* Menu */}
         <div className="flex-1 w-full px-4 md:px-10">
-          {/* نمرر setLoading و onFeaturedCheck لـ Menu */}
           <Menu
             onLoadingChange={setLoading}
             onFeaturedCheck={setHasFeatured}

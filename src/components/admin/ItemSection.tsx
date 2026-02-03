@@ -5,6 +5,8 @@ import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { FaStar } from "react-icons/fa";
 import type { PopupState, Category, Item } from "./types";
 import FeaturedGallery from "./FeaturedGallery";
+import CustomSelect from "./CustomSelect"; // عدّل المسار حسب مكان الملف
+
 
 /* ================== auto load feature images from public/featured ================== */
 const galleryImages = Object.keys(
@@ -118,17 +120,13 @@ const ItemSection: React.FC<Props> = ({ categories, items, setPopup }) => {
       {/* ================== إضافة صنف ================== */}
       <div className="flex flex-col gap-3 mb-5">
         <div className="flex flex-col">
-          <select
-            className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-[#FDB143]
-              ${selectedCategoryError ? "border-red-500" : "border-gray-300"}`}
+          <CustomSelect
+            options={Object.keys(categories).map(id => ({ id, name: categories[id].name }))}
             value={selectedCategory}
-            onChange={(e) => { setSelectedCategory(e.target.value); setSelectedCategoryError(false); }}
-          >
-            <option value="">اختر القسم</option>
-            {Object.keys(categories).map(id => (
-              <option key={id} value={id}>{categories[id].name}</option>
-            ))}
-          </select>
+            onChange={(val) => { setSelectedCategory(val); setSelectedCategoryError(false); }}
+            error={selectedCategoryError}
+            placeholder="اختر القسم"
+          />
           {selectedCategoryError && <span className="text-xs text-red-500 mt-1">الرجاء اختيار قسم</span>}
         </div>
 
