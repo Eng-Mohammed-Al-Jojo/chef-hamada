@@ -15,9 +15,10 @@ export default function MenuPage() {
       dir="rtl"
       className="
         min-h-screen flex flex-col
-        bg-[url('/bg.jpg')] md:bg-[url('/bg4.jpg')]
-        bg-cover bg-center bg-no-repeat
+        bg-[url('/bg4.jpg')] 
+        
         bg-scroll md:bg-fixed
+        md:bg-cover md:bg-center md:bg-no-repeat
         text-[#F5F8F7]
         font-[Cairo]
         relative

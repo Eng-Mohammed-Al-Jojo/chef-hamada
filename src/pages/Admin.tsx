@@ -526,7 +526,7 @@ export default function Admin() {
 
   // ================= ADMIN PANEL =================
   return (
-    <div className="min-h-screen w-full bg-[#231F20] flex justify-center py-5 md:p-6" dir="rtl">
+    <div className="min-h-screen w-full bg-[url('/bg4.jpg')] flex justify-center py-5 md:p-6" dir="rtl">
       {toast && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#FDB143] text-white px-6 py-3 rounded-xl shadow-lg transition-all">
           {toast}
