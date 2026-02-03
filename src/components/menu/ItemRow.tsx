@@ -17,7 +17,7 @@ export default function ItemRow({ item, orderSystem }: Props) {
   const [showToast, setShowToast] = useState(false);
 
   const hasIngredients = !!item.ingredients;
-  const hasImage = !!item.featured; // ✅ هل يوجد صورة للصنف
+  const hasImage = !!item.image;
 
   const handleAdd = (price: number) => {
     addItem(item, price);
@@ -56,17 +56,17 @@ export default function ItemRow({ item, orderSystem }: Props) {
         {/* الصورة + الاسم + المكونات */}
         <div className="flex gap-4 flex-1 min-w-0 z-10 items-center">
           {/* صورة الصنف */}
-          {hasImage && (
+          {/* {hasImage && (
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-[#FDB143]/40 bg-black/40 flex items-center justify-center">
               <img
-                src={`/featured/${item.featured}`} // ⬅️ المسار + اسم الملف من قاعدة البيانات
+                src={`/images/${item.image}`} // ⬅️ المسار + اسم الملف من قاعدة البيانات
                 alt={item.name}
                 loading="lazy"
                 className="w-full h-full object-cover"
                 onError={(e) => (e.currentTarget.style.display = "none")}
               />
             </div>
-          )}
+          )} */}
 
           {/* الاسم + المكونات */}
           <div className="flex flex-col justify-center min-w-0">

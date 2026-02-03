@@ -13,7 +13,7 @@ interface Item {
     name: string;
     description?: string;
     price: string;
-    featured?: string; // اسم الصورة
+    image?: string; // اسم الصورة
     star?: boolean;    // ⭐ نجمة
     visible?: boolean;
 }
@@ -108,7 +108,7 @@ export default function FeaturedModal({ show, onClose }: Props) {
                                             flex items-center justify-center
                                         ">
                                             <img
-                                                src={item.featured ? `/featured/${item.featured}` : `/hamada.png`}
+                                                src={item.image ? `/images/${item.image}` : `/hamada.png`}
                                                 alt={item.name}
                                                 className="w-full h-full object-cover"
                                             />

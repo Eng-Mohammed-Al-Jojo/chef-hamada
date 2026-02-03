@@ -4,11 +4,11 @@ interface Props {
     visible: boolean;
     onClose: () => void;
     onSelect: (img: string) => void;
-    featureImages: string[];
+    galleryImages: string[];
     selectedImage?: string;
 }
 
-const FeaturedGallery: React.FC<Props> = ({ visible, onClose, onSelect, featureImages, selectedImage }) => {
+const FeaturedGallery: React.FC<Props> = ({ visible, onClose, onSelect, galleryImages, selectedImage }) => {
     if (!visible) return null;
 
     return (
@@ -16,7 +16,7 @@ const FeaturedGallery: React.FC<Props> = ({ visible, onClose, onSelect, featureI
             <div className="bg-white rounded-xl w-full max-w-md sm:max-w-lg md:max-w-xl p-6">
                 <h3 className="font-bold mb-4 text-center text-lg md:text-xl">اختر للصنف</h3>
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                    {featureImages.map((img) => (
+                    {galleryImages.map((img) => (
                         <button
                             key={img}
                             type="button"
@@ -25,7 +25,7 @@ const FeaturedGallery: React.FC<Props> = ({ visible, onClose, onSelect, featureI
             ${selectedImage === img ? "border-[#FDB143]" : "border-transparent hover:border-gray-300"}`}
                         >
                             <img
-                                src={`/featured/${img}`}
+                                src={`/images/${img}`}
                                 alt={img}
                                 className="w-full h-20 object-contain bg-black"
                             />

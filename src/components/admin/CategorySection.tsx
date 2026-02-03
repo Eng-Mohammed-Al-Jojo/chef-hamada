@@ -157,7 +157,7 @@ const CategorySection: React.FC<Props> = ({
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempName, setTempName] = useState("");
-  const [openCategories, setOpenCategories] = useState(true);
+  const [openCategories, setOpenCategories] = useState(false);
 
   const startEditing = (id: string, name: string) => {
     setEditingId(id);

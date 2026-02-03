@@ -13,6 +13,8 @@ export interface Category {
 }
 
 export interface Item {
+  featured: any;
+  image: string | undefined;
   id: string;
   name: string;
   price: number;

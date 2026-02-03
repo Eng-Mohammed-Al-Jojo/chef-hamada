@@ -7,9 +7,9 @@ import type { PopupState, Category, Item } from "./types";
 import FeaturedGallery from "./FeaturedGallery";
 
 /* ================== auto load feature images from public/featured ================== */
-const featureImages = Object.keys(
-  import.meta.glob("/public/featured/*")
-).map((path) => path.replace("/public/featured/", ""));
+const galleryImages = Object.keys(
+  import.meta.glob("/public/images/*")
+).map((path) => path.replace("/public/images/", ""));
 /* ================================================================== */
 
 interface Props {
@@ -35,7 +35,7 @@ const ItemSection: React.FC<Props> = ({ categories, items, setPopup }) => {
   // ================== Gallery state ==================
   const [showGallery, setShowGallery] = useState(false);
   const [galleryForItemId, setGalleryForItemId] = useState<string | null>(null);
-  const [itemFeatured, setItemFeatured] = useState("");
+  const [itemImage, setItemImage] = useState("");
 
   // ================== Local state for items ==================
   const [localItems, setLocalItems] = useState<Record<string, Item>>(items);
@@ -66,7 +66,7 @@ const ItemSection: React.FC<Props> = ({ categories, items, setPopup }) => {
       categoryId: selectedCategory,
       visible: true,
       createdAt: Date.now(),
-      featured: itemFeatured || "",
+      image: itemImage || "", // ✅
       star: false,
     });
 
@@ -75,7 +75,7 @@ const ItemSection: React.FC<Props> = ({ categories, items, setPopup }) => {
     setItemIngredients("");
     setItemPrice("");
     setSelectedCategory("");
-    setItemFeatured("");
+    setItemImage("");
 
     // Show toast
     setShowToast(true);
@@ -86,25 +86,26 @@ const ItemSection: React.FC<Props> = ({ categories, items, setPopup }) => {
     await update(ref(db, `items/${id}`), { visible: !visible });
   };
 
-  const updateFeatured = async (id: string, featured: string) => {
-    await update(ref(db, `items/${id}`), { featured });
+  const updateImage = async (id: string, image: string) => {
+    await update(ref(db, `items/${id}`), { image });
   };
 
-  const removeFeatured = async (id: string) => {
-    await update(ref(db, `items/${id}`), { featured: "" });
+  const removeImage = async (id: string) => {
+    await update(ref(db, `items/${id}`), { image: "" });
   };
 
-  const openGallery = (itemId: string, currentFeatured?: string) => {
+  const openGallery = (itemId: string, currentImage?: string) => {
     setGalleryForItemId(itemId);
-    setItemFeatured(currentFeatured || "");
+    setItemImage(currentImage || "");
     setShowGallery(true);
   };
 
   const handleSelectImage = async (img: string) => {
     if (!galleryForItemId) return;
-    await updateFeatured(galleryForItemId, img);
+    await updateImage(galleryForItemId, img);
     setShowGallery(false);
   };
+
 
   const toggleSection = (id: string) => {
     setExpandedSections(prev => ({ ...prev, [id]: !prev[id] }));
@@ -206,8 +207,19 @@ const ItemSection: React.FC<Props> = ({ categories, items, setPopup }) => {
                 className="flex justify-between items-center cursor-pointer px-4 py-2 font-semibold text-gray-800 bg-gray-50 rounded-t-lg hover:bg-gray-100 transition"
                 onClick={() => toggleSection(catId)}
               >
-                {cat.name}
-                <span>{expandedSections[catId] ? "▲" : "▼"}</span>
+
+                <span>{cat.name}
+                  <span className="bg-[#FDB143] text-white text-sm px-2 py-0.5 mr-4 rounded-full">
+                    {catItems.length}
+                  </span>
+                </span>
+
+                <span>
+
+
+                  {expandedSections[catId] ? "▲" : "▼"}
+                </span>
+
               </div>
 
               {expandedSections[catId] && (
@@ -219,16 +231,19 @@ const ItemSection: React.FC<Props> = ({ categories, items, setPopup }) => {
                         ${!item.visible ? "opacity-60 line-through" : ""}`}
                     >
                       <div className="flex-1 min-w-0 flex items-center gap-2">
-                        {item.featured ? (
+                        {item.image ? (
                           <div className="relative">
                             <img
-                              src={`/featured/${item.featured}`}
+                              src={`/images/${item.image}`}
                               alt={item.name}
-                              className="w-10 h-10 object-contain bg-black rounded cursor-pointer"
-                              onClick={() => openGallery(item.id, item.featured)}
+                              className="w-10 h-10 object-contain bg-gray-100 rounded cursor-pointer"
+                              onError={(e) => {
+                                e.currentTarget.src = "/images/placeholder.png";
+                              }}
+                              onClick={() => openGallery(item.id, item.image)}
                             />
                             <button
-                              onClick={() => removeFeatured(item.id)}
+                              onClick={() => removeImage(item.id)}
                               className="absolute -top-2 -right-2 w-5 h-5 flex justify-center items-center bg-red-600 text-white rounded-full hover:bg-red-700 transition text-xs"
                             >
                               ×
@@ -309,8 +324,8 @@ const ItemSection: React.FC<Props> = ({ categories, items, setPopup }) => {
         visible={showGallery}
         onClose={() => setShowGallery(false)}
         onSelect={handleSelectImage}
-        featureImages={featureImages}
-        selectedImage={itemFeatured}
+        galleryImages={galleryImages}
+        selectedImage={itemImage}
       />
     </div>
   );
