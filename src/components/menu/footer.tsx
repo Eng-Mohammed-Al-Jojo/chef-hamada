@@ -17,7 +17,9 @@ import FeedbackModal from "../menu/FeedbackModal";
 const LOCAL_STORAGE_KEY = "footerInfo";
 
 export default function Footer() {
+
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [complaintsWhatsapp, setComplaintsWhatsapp] = useState("");
 
   const [footer, setFooter] = useState({
     address: "",
@@ -29,69 +31,83 @@ export default function Footer() {
     telegram: "",
   });
 
+
   useEffect(() => {
-    // 1️⃣ جلب من localStorage أولاً
+    /* ===== footerInfo ===== */
     const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (localData) setFooter(JSON.parse(localData));
 
-    // 2️⃣ الاستماع لتغييرات Firebase مباشرة
     const footerRef = ref(db, "settings/footerInfo");
-    const unsubscribe = onValue(footerRef, (snapshot) => {
+    const unsubFooter = onValue(footerRef, (snapshot) => {
       if (snapshot.exists()) {
+        console.log("Firebase footerInfo:", snapshot.val());
         const data = snapshot.val();
         setFooter(data);
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
       }
     });
 
-    // تنظيف listener عند إزالة المكون
-    return () => unsubscribe();
+    /* ===== complaintsWhatsapp ===== */
+    const complaintsRef = ref(db, "settings/complaintsWhatsapp");
+    const unsubComplaints = onValue(complaintsRef, (snapshot) => {
+      const value = snapshot.val();
+      setComplaintsWhatsapp(value ? String(value).trim() : "");
+    });
+
+    return () => {
+      unsubFooter();
+      unsubComplaints();
+    };
   }, []);
 
-  // ===== Social Icons Mapping =====
+  /* ===== Social Icons ===== */
   const socialIcons: { Icon: any; url: string | undefined }[] = [
-    { Icon: FaWhatsapp, url: footer.whatsapp ? `https://wa.me/${footer.whatsapp}` : undefined },
-    { Icon: FaInstagram, url: footer.instagram },
-    { Icon: FaFacebookF, url: footer.facebook },
-    { Icon: FaTiktok, url: footer.tiktok },
-    { Icon: FaTelegramPlane, url: footer.telegram },
+    {
+      Icon: FaWhatsapp,
+      url: footer.whatsapp
+        ? `https://wa.me/${footer.whatsapp}`
+        : undefined,
+    },
+    { Icon: FaInstagram, url: footer.instagram || undefined },
+    { Icon: FaFacebookF, url: footer.facebook || undefined },
+    { Icon: FaTiktok, url: footer.tiktok || undefined },
+    { Icon: FaTelegramPlane, url: footer.telegram || undefined },
   ];
 
   return (
-    <footer className="mt-20
-      bg-linear-to-t from-[#040309] via-[#040309]/95 to-[#040309]/90
-      text-[#F5F8F7]
-      rounded-t-3xl
-      border-t border-[#FDB143]/30
-      font-[Almarai]">
-
+    <footer
+      className="
+        mt-20
+        bg-linear-to-t from-[#040309] via-[#040309]/95 to-[#040309]/90
+        text-[#F5F8F7]
+        rounded-t-3xl
+        border-t border-[#FDB143]/30
+        font-[Almarai]
+      "
+    >
       <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-8">
-
-        {/* يمين – الموقع */}
+        {/* ===== Right | Address ===== */}
         <div className="flex flex-col md:items-end items-center space-y-3 w-full md:w-auto">
-          <div className="flex items-center gap-2 text-lg font-[Cairo]">
-            {footer.address && (
-              <>
-                <FaMapMarkerAlt className="text-xl shrink-0" />
-                <span className="text-right">
-                  {footer.address}
-                </span>
-              </>
-            )}
-          </div>
+          {footer.address && (
+            <div className="flex items-center gap-2 text-lg font-[Cairo]">
+              <FaMapMarkerAlt className="text-xl shrink-0" />
+              <span className="text-right">{footer.address}</span>
+            </div>
+          )}
 
 
-          <div className="flex flex-col gap-1 items-start md:items-end">
-            {footer.phone && (
-              <a href={`tel:${footer.phone}`} className="flex items-center gap-2">
-                <FaPhoneAlt /> {footer.phone}
-              </a>
-            )}
 
-          </div>
+          {footer.phone && (
+            <a
+              href={`tel:${footer.phone}`}
+              className="flex items-center gap-2"
+            >
+              <FaPhoneAlt /> {footer.phone}
+            </a>
+          )}
         </div>
 
-        {/* الوسط – أيقونات التواصل */}
+        {/* ===== Center | Social + Feedback ===== */}
         <div className="flex flex-col items-center gap-5 w-full md:w-auto">
           <div className="flex gap-4">
             {socialIcons.map(
@@ -102,23 +118,26 @@ export default function Footer() {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full flex items-center justify-center
+                    className="
+                      w-10 h-10 rounded-full flex items-center justify-center
                       bg-[#FDB143] text-[#040309]
                       hover:scale-110
                       hover:shadow-[0_0_25px_rgba(253,177,67,0.6)]
-                      transition-all duration-300"
+                      transition-all duration-300
+                    "
                   >
                     <Icon className="text-white text-lg" />
                   </a>
                 )
             )}
           </div>
-          {/* Feedback Button */}
-          {showFeedbackModal && (
+
+          {/* ===== Feedback Button ===== */}
+          {complaintsWhatsapp !== "" && (
             <button
               onClick={() => setShowFeedbackModal(true)}
               className="
-                mt-4 w-full max-w-xs flex items-center justify-center gap-2             
+                mt-4 w-full max-w-xs flex items-center justify-center gap-2
                 bg-[#FDB143] text-[#040309]
                 rounded-2xl
                 py-3 px-4
@@ -133,7 +152,7 @@ export default function Footer() {
           )}
         </div>
 
-        {/* يسار – توقيع المهندس */}
+        {/* ===== Left | Signature ===== */}
         <div className="flex flex-col md:items-start items-center w-full md:w-auto">
           <a
             href="https://engmohammedaljojo.vercel.app/"
@@ -155,10 +174,15 @@ export default function Footer() {
             </div>
           </a>
         </div>
-
       </div>
 
-      <FeedbackModal show={showFeedbackModal} onClose={() => setShowFeedbackModal(false)} />
+      {/* ===== Feedback Modal ===== */}
+      {complaintsWhatsapp !== "" && (
+        <FeedbackModal
+          show={showFeedbackModal}
+          onClose={() => setShowFeedbackModal(false)}
+        />
+      )}
     </footer>
   );
 }
