@@ -48,11 +48,11 @@ export default function ItemRow({ item, orderSystem }: Props) {
       <div
         className={`
           relative flex justify-between items-center
-          ${hasIngredients ? "items-start" : "items-center"} 
           bg-linear-to-br from-[#0b0a0e]/90 to-[#040309]/95
           border ${unavailable ? "border-gray-500/40" : "border-[#FDB143]/50"}
           shadow-[0_4px_15px_rgba(0,0,0,0.3),inset_0_0_10px_rgba(253,177,67,0.05)]
           rounded-2xl p-4 sm:p-5 gap-4 font-[Almarai] font-bold
+          min-h-[70px]
         `}
       >
         {/* Glow خفيف */}
@@ -63,7 +63,11 @@ export default function ItemRow({ item, orderSystem }: Props) {
         {/* الصورة + الاسم + المكونات */}
         <div className="flex gap-4 flex-1 min-w-0 z-10 items-center">
           {/* الاسم + المكونات */}
-          <div className="flex flex-col justify-center min-w-0">
+          <div
+            className={`
+              flex flex-col justify-center min-w-0 w-full h-full
+            `}
+          >
             <h3
               className={`
                 text-md sm:text-lg md:text-xl font-extrabold leading-snug
@@ -96,33 +100,30 @@ export default function ItemRow({ item, orderSystem }: Props) {
             ${hasImage ? "items-center" : ""}
           `}
         >
-
           {/* ✅ سعر التيك أواي (مضاف فقط) */}
           {hasTakeawayPrice && (
             <div className="relative flex items-center gap-2">
               {/* Box السعر وزر الإضافة */}
               <div
                 className={`
-        relative flex items-center
-        ${orderSystem && !unavailable
-                    ? "justify-center px-3 py-2 w-full"
-                    : "justify-center px-2 py-2 min-w-[60px] sm:min-w-[80px]"}
-        gap-2 rounded-xl bg-black/40 border border-[#FDB143]/30
-        backdrop-blur-sm transition-all duration-200
-        ${unavailable ? "opacity-50 line-through" : ""}
-      `}
+                  relative flex items-center justify-center
+                  ${orderSystem && !unavailable ? "px-3 py-2 w-full" : "px-2 py-2 min-w-[60px] sm:min-w-[80px]"}
+                  gap-2 rounded-xl bg-black/40 border border-[#FDB143]/30
+                  backdrop-blur-sm transition-all duration-200
+                  ${unavailable ? "opacity-50 line-through" : ""}
+                `}
               >
                 {/* وسم T.W كبادج أعلى البوكس */}
-                <span className="absolute -top-1 -right-3 bg-[#FFD369] text-black text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                <span className="absolute -top-2 -right-2 bg-[#FFD369] text-black text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
                   T.W
                 </span>
 
                 {/* السعر */}
                 <span
                   className={`
-          text-sm sm:text-base font-extrabold whitespace-nowrap
-          ${unavailable ? "text-gray-300 line-through" : "text-[#FFD369]"}
-        `}
+                    text-sm sm:text-base font-extrabold whitespace-nowrap
+                    ${unavailable ? "text-gray-300 line-through" : "text-[#FFD369]"}
+                  `}
                 >
                   {item.priceTw}₪
                 </span>
@@ -132,14 +133,14 @@ export default function ItemRow({ item, orderSystem }: Props) {
                   <button
                     onClick={() => handleAdd(Number(item.priceTw))}
                     className={`
-            w-6 h-6 sm:w-7 sm:h-7
-            flex items-center justify-center
-            rounded-md font-bold text-black
-            ${addedPrice === Number(item.priceTw)
+                      w-6 h-6 sm:w-7 sm:h-7
+                      flex items-center justify-center
+                      rounded-md font-bold text-black
+                      ${addedPrice === Number(item.priceTw)
                         ? "bg-[#FFD369]"
                         : "bg-linear-to-r from-[#FFD369]/90 to-[#FDB143]/90 hover:scale-105"}
-            transition-all duration-200
-          `}
+                      transition-all duration-200
+                    `}
                   >
                     {addedPrice === Number(item.priceTw) ? (
                       <FaCheck className="animate-pulse text-md" />
@@ -152,9 +153,7 @@ export default function ItemRow({ item, orderSystem }: Props) {
             </div>
           )}
 
-
-
-
+          {/* أسعار عادية */}
           {prices.map((p) => {
             const price = Number(p.trim());
             const isAdded = addedPrice === price;
@@ -163,10 +162,8 @@ export default function ItemRow({ item, orderSystem }: Props) {
               <div
                 key={price}
                 className={`
-                  flex items-center
-                  ${orderSystem && !unavailable
-                    ? "justify-center px-3 py-2 w-full"
-                    : "justify-center px-2 py-2 min-w-[60px] sm:min-w-[80px]"}
+                  flex items-center justify-center
+                  ${orderSystem && !unavailable ? "px-3 py-2 w-full" : "px-2 py-2 min-w-[60px] sm:min-w-[80px]"}
                   gap-2 rounded-xl bg-black/40 border border-[#FDB143]/30
                   backdrop-blur-sm transition-all duration-200
                   ${unavailable ? "opacity-50 line-through" : ""}
@@ -206,9 +203,6 @@ export default function ItemRow({ item, orderSystem }: Props) {
               </div>
             );
           })}
-
-
-
         </div>
       </div>
 
