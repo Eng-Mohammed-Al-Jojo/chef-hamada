@@ -130,9 +130,20 @@ export default function CartModal({ onClose }: { onClose: () => void }) {
                                                     className="flex items-center justify-between bg-black/30 rounded-xl p-3"
                                                 >
                                                     <div className="flex-1">
-                                                        <p className="font-bold text-sm">
+                                                        <p className="font-bold text-sm flex items-center gap-2">
                                                             {item.name}
+                                                            {item.priceTw !== undefined &&
+                                                                item.priceTw !== null &&
+                                                                String(item.priceTw).trim() !== "" &&
+                                                                Number(item.priceTw) > 0 &&
+                                                                Number(item.selectedPrice) === Number(item.priceTw) && (
+                                                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#FDB143]/20 border border-[#FDB143]/40 text-[#FFD369] font-extrabold">
+                                                                        T.W
+                                                                    </span>
+                                                                )}
                                                         </p>
+
+
                                                         <p className="text-xs text-[#F7F3E8]/60">
                                                             {item.qty} × {item.selectedPrice}₪
                                                         </p>

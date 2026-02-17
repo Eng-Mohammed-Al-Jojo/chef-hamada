@@ -19,6 +19,13 @@ export default function ItemRow({ item, orderSystem }: Props) {
   const hasIngredients = !!item.ingredients;
   const hasImage = !!item.image;
 
+  // ✅ إضافة فقط
+  const hasTakeawayPrice =
+    item.priceTw !== undefined &&
+    item.priceTw !== null &&
+    String(item.priceTw).trim() !== "" &&
+    Number(item.priceTw) > 0;
+
   const handleAdd = (price: number) => {
     addItem(item, price);
     setAddedPrice(price);
@@ -55,19 +62,6 @@ export default function ItemRow({ item, orderSystem }: Props) {
 
         {/* الصورة + الاسم + المكونات */}
         <div className="flex gap-4 flex-1 min-w-0 z-10 items-center">
-          {/* صورة الصنف */}
-          {/* {hasImage && (
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-[#FDB143]/40 bg-black/40 flex items-center justify-center">
-              <img
-                src={`/images/${item.image}`} // ⬅️ المسار + اسم الملف من قاعدة البيانات
-                alt={item.name}
-                loading="lazy"
-                className="w-full h-full object-cover"
-                onError={(e) => (e.currentTarget.style.display = "none")}
-              />
-            </div>
-          )} */}
-
           {/* الاسم + المكونات */}
           <div className="flex flex-col justify-center min-w-0">
             <h3
@@ -102,6 +96,65 @@ export default function ItemRow({ item, orderSystem }: Props) {
             ${hasImage ? "items-center" : ""}
           `}
         >
+
+          {/* ✅ سعر التيك أواي (مضاف فقط) */}
+          {hasTakeawayPrice && (
+            <div className="relative flex items-center gap-2">
+              {/* Box السعر وزر الإضافة */}
+              <div
+                className={`
+        relative flex items-center
+        ${orderSystem && !unavailable
+                    ? "justify-center px-3 py-2 w-full"
+                    : "justify-center px-2 py-2 min-w-[60px] sm:min-w-[80px]"}
+        gap-2 rounded-xl bg-black/40 border border-[#FDB143]/30
+        backdrop-blur-sm transition-all duration-200
+        ${unavailable ? "opacity-50 line-through" : ""}
+      `}
+              >
+                {/* وسم T.W كبادج أعلى البوكس */}
+                <span className="absolute -top-1 -right-3 bg-[#FFD369] text-black text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                  T.W
+                </span>
+
+                {/* السعر */}
+                <span
+                  className={`
+          text-sm sm:text-base font-extrabold whitespace-nowrap
+          ${unavailable ? "text-gray-300 line-through" : "text-[#FFD369]"}
+        `}
+                >
+                  {item.priceTw}₪
+                </span>
+
+                {/* زر الإضافة */}
+                {orderSystem && !unavailable && (
+                  <button
+                    onClick={() => handleAdd(Number(item.priceTw))}
+                    className={`
+            w-6 h-6 sm:w-7 sm:h-7
+            flex items-center justify-center
+            rounded-md font-bold text-black
+            ${addedPrice === Number(item.priceTw)
+                        ? "bg-[#FFD369]"
+                        : "bg-linear-to-r from-[#FFD369]/90 to-[#FDB143]/90 hover:scale-105"}
+            transition-all duration-200
+          `}
+                  >
+                    {addedPrice === Number(item.priceTw) ? (
+                      <FaCheck className="animate-pulse text-md" />
+                    ) : (
+                      <span className="text-lg md:text-xl">+</span>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+
+
+
           {prices.map((p) => {
             const price = Number(p.trim());
             const isAdded = addedPrice === price;
@@ -143,25 +196,36 @@ export default function ItemRow({ item, orderSystem }: Props) {
                         : "bg-linear-to-r from-[#FFD369]/90 to-[#FDB143]/90 hover:scale-105"}
                     `}
                   >
-                    {isAdded ? <FaCheck className="animate-pulse text-md" /> : <span className="text-lg md:text-xl">+</span>}
+                    {isAdded ? (
+                      <FaCheck className="animate-pulse text-md" />
+                    ) : (
+                      <span className="text-lg md:text-xl">+</span>
+                    )}
                   </button>
                 )}
               </div>
             );
           })}
+
+
+
         </div>
       </div>
 
       {/* Toast */}
       {showToast && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-full 
+        <div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-full 
                   bg-linear-to-r from-[#FFD369] to-[#FDB143] 
                   text-black font-bold px-4 py-2 rounded-2xl 
                   shadow-lg shadow-black/50
                   flex items-center gap-2
-                  animate-toast-show pointer-events-none z-50">
+                  animate-toast-show pointer-events-none z-50"
+        >
           <FaCheck className="text-black w-4 h-4" />
-          <span className="text-sm sm:text-base">تمت إضافة الصنف ، تفقد الطلب</span>
+          <span className="text-sm sm:text-base">
+            تمت إضافة الصنف ، تفقد الطلب
+          </span>
         </div>
       )}
     </div>

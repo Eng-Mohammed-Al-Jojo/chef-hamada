@@ -119,10 +119,16 @@ export default function OrderTabs({
         });
 
         const list = items
-            .map(
-                i =>
-                    `🔹 ${i.qty} × ${i.name} → ${i.selectedPrice * i.qty}₪`
-            )
+            .map(i => {
+                const twLabel =
+                    i.priceTw !== undefined &&
+                        i.priceTw !== null &&
+                        Number(i.selectedPrice) === Number(i.priceTw)
+                        ? " T.W"
+                        : "";
+
+                return `🔹 ${i.qty} × ${i.name}${twLabel} → ${i.selectedPrice * i.qty}₪`;
+            })
             .join("\n");
 
         if (tab === "in") {
@@ -161,6 +167,7 @@ ${list}
 💵 الدفع عند الاستلام
 ========================`;
     };
+
 
     const submit = () => {
         if (!validateForm()) return;

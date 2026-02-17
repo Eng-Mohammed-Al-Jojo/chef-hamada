@@ -261,8 +261,20 @@ const ItemSection: React.FC<Props> = ({ categories, items, setPopup }) => {
                           {item.ingredients && (
                             <p className={`truncate text-sm ${!item.visible ? "text-gray-400" : "text-gray-500"}`}>{item.ingredients}</p>
                           )}
-                          <p className={`truncate text-sm ${!item.visible ? "text-gray-400" : "text-gray-400"}`}>{item.price} ₪</p>
-                        </div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {/* السعر الأساسي */}
+                            <span className={`text-sm font-medium ${!item.visible ? "text-gray-400" : "text-gray-600"}`}>
+                              {item.price} ₪
+                            </span>
+
+                            {/* سعر التيك أواي */}
+                            {item.priceTw && (
+                              <span className="flex items-center gap-1 text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">
+                                T.W
+                                <span className="font-semibold">{item.priceTw} ₪</span>
+                              </span>
+                            )}
+                          </div>                        </div>
                       </div>
 
                       <div className="flex gap-2 shrink-0">
