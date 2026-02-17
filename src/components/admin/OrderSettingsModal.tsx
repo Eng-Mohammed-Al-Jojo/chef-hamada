@@ -74,6 +74,7 @@ export default function OrderSettingsModal({
     const [footer, setFooter] = useState({
         address: "",
         phone: "",
+        altPhone: "",
         whatsapp: "",
         facebook: "",
         instagram: "",
@@ -203,6 +204,12 @@ export default function OrderSettingsModal({
                             placeholder="📞 الهاتف"
                             value={footer.phone}
                             onChange={(e) => setFooter({ ...footer, phone: e.target.value })}
+                            className={inputClass}
+                        />
+                        <input
+                            placeholder="📞 الهاتف بديل"
+                            value={footer.altPhone}
+                            onChange={(e) => setFooter({ ...footer, altPhone: e.target.value })}
                             className={inputClass}
                         />
                         <input

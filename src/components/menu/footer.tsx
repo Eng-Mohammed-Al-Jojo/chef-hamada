@@ -24,6 +24,7 @@ export default function Footer() {
   const [footer, setFooter] = useState({
     address: "",
     phone: "",
+    altPhone: "",
     whatsapp: "",
     facebook: "",
     instagram: "",
@@ -86,26 +87,42 @@ export default function Footer() {
       "
     >
       <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-8">
-        {/* ===== Right | Address ===== */}
-        <div className="flex flex-col md:items-end items-center space-y-3 w-full md:w-auto">
+        {/* ===== Right | Address + Phone ===== */}
+        <div className="flex flex-col items-center md:items-end w-full md:w-auto space-y-2 text-center md:text-right">
+
+          {/* العنوان */}
           {footer.address && (
-            <div className="flex items-center gap-2 text-lg font-[Cairo]">
+            <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 text-lg font-[Cairo]">
               <FaMapMarkerAlt className="text-xl shrink-0" />
-              <span className="text-right">{footer.address}</span>
+              <span className="wrap-break-word max-w-full md:max-w-xs">{footer.address}</span>
             </div>
           )}
 
-
-
+          {/* رقم الجوال الأساسي */}
           {footer.phone && (
             <a
               href={`tel:${footer.phone}`}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center md:justify-end gap-2 text-lg font-[Cairo]"
             >
-              <FaPhoneAlt /> {footer.phone}
+              <FaPhoneAlt className="shrink-0" />
+              <span>{footer.phone}</span>
             </a>
           )}
+
+          {/* رقم جوال بديل */}
+          {footer.altPhone && (
+            <a
+              href={`tel:${footer.altPhone}`}
+              className="flex items-center justify-center md:justify-end gap-2 text-lg font-[Cairo]"
+            >
+              <FaPhoneAlt className="shrink-0" />
+              <span>{footer.altPhone}</span>
+            </a>
+          )}
+
         </div>
+
+
 
         {/* ===== Center | Social + Feedback ===== */}
         <div className="flex flex-col items-center gap-5 w-full md:w-auto">
@@ -158,17 +175,17 @@ export default function Footer() {
             href="https://engmohammedaljojo.vercel.app/"
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-white/10 transition"
+            className="group flex items-center gap-3 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition"
           >
             <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
               <FaLaptopCode className="text-white text-lg" />
             </div>
 
             <div className="leading-tight text-center md:text-left">
-              <span className="block text-[10px] opacity-70">
+              <span className="block text-[10px] opacity-70 font-[Lemonada]">
                 تصميم وتطوير
               </span>
-              <span className="block font-extrabold text-xs md:text-sm">
+              <span className="block font-extrabold text-xs md:text-sm font-[Lemonada]">
                 Eng. Mohammed Eljoujo
               </span>
             </div>
