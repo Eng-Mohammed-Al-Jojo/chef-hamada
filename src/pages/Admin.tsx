@@ -21,6 +21,7 @@ import Popup from "../components/admin/Popup";
 import { type PopupState } from "../components/admin/types";
 import OrderSettingsModal from "../components/admin/OrderSettingsModal";
 import { FaDatabase } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Admin() {
   const location = useLocation();
@@ -427,195 +428,289 @@ export default function Admin() {
   // ================= LOGIN UI =================
   if (!authOk) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#231F20]" dir="rtl">
-        {toast && (
-          <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#FDB143] text-white px-6 py-3 rounded-xl shadow-lg transition-all">
-            {toast}
-          </div>
-        )}
-        {/* POPUP إعادة تعيين كلمة المرور */}
-        {resetPasswordPopup && (
-          <div className="fixed inset-0 bg-[#231F20]/80 flex justify-center items-center z-50 ">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm border-4 border-[#FDB143]">
-              {/* الشعار */}
-              <div className="flex justify-center mb-4">
-                <img src="/hamada.png" alt="Logo" className="w-24 h-24 object-contain" />
-              </div>
-              <h2 className="text-xl font-bold mb-4 text-[#940D11] text-center">
-                إعادة تعيين كلمة المرور
-              </h2>
-              <input
-                type="email"
-                placeholder="أدخل بريدك الإلكتروني"
-                className="w-full p-3 border rounded-xl mb-3"
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-              />
-              {resetMessage && (
-                <p className="text-sm text-center text-green-600 mb-2">{resetMessage}</p>
-              )}
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={handleResetPassword}
-                  className="bg-[#FDB143] text-white px-4 py-2 rounded-xl hover:bg-[#FDB143]/80 transition"
-                >
-                  إرسال الرابط
-                </button>
-                <button
-                  onClick={() => {
-                    setResetPasswordPopup(false);
-                    setResetMessage("");
-                  }}
-                  className="px-4 py-2 rounded-xl border hover:bg-gray-100 transition"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+      <div className="min-h-screen flex items-center justify-center bg-[#040309] font-[Cairo] p-4 relative overflow-hidden" dir="rtl">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FDB143]/10 blur-[120px] rounded-full animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#940D11]/10 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+        </div>
 
-        {/* POPUP تسجيل الدخول */}
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed top-8 left-1/2 -translate-x-1/2 z-50 bg-[#FDB143] text-black px-8 py-3 rounded-2xl font-black shadow-2xl transition-all"
+            >
+              {toast}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Password Reset Modal */}
+        <AnimatePresence>
+          {resetPasswordPopup && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-xl flex justify-center items-center z-50 p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="glass-panel p-8 w-full max-w-sm border border-white/10 rounded-[2.5rem] shadow-2xl relative"
+              >
+                <div className="flex justify-center mb-6">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-[#FDB143]/20 blur-2xl rounded-full" />
+                    <img src="/hamada.png" alt="Logo" className="relative w-24 h-24 object-contain" />
+                  </div>
+                </div>
+                <h2 className="text-xl font-black mb-6 text-white text-center">
+                  إعادة تعيين كلمة المرور
+                </h2>
+                <div className="space-y-4">
+                  <input
+                    type="email"
+                    placeholder="البريد الإلكتروني"
+                    className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-white/20 focus:outline-none focus:border-[#FDB143]/50 transition-all font-light"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                  />
+                  {resetMessage && (
+                    <p className="text-sm text-center text-[#FDB143] font-bold animate-pulse">{resetMessage}</p>
+                  )}
+                  <div className="flex flex-col gap-3 pt-2">
+                    <button
+                      onClick={handleResetPassword}
+                      className="w-full py-4 rounded-2xl bg-[#FDB143] text-black font-black hover:scale-[1.02] active:scale-95 transition-all shadow-lg"
+                    >
+                      إرسال الرابط
+                    </button>
+                    <button
+                      onClick={() => {
+                        setResetPasswordPopup(false);
+                        setResetMessage("");
+                      }}
+                      className="w-full py-4 rounded-2xl bg-white/5 text-white/60 hover:text-white transition-all font-bold"
+                    >
+                      إلغاء
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Login Form */}
         {!resetPasswordPopup && (
-          <div
-            className="bg-white p-6 rounded-3xl w-full max-w-xs border-4 flex flex-col items-center"
-            style={{ borderColor: "#FDB143" }}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative glass-panel p-8 md:p-10 w-full max-w-md border border-white/10 rounded-[2.5rem] shadow-2xl flex flex-col items-center"
           >
-            {toast && (
-              <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#FDB143] text-white px-6 py-3 rounded-xl shadow-lg transition-all">
-                {toast}
-              </div>
-            )}
-            {/* الشعار */}
-            <div className="mb-4">
-              <img src="/hamada.png" alt="Logo" className="w-24 h-24 object-contain" />
+            <div className="relative mb-8 group">
+              <div className="absolute inset-0 bg-[#FDB143]/20 blur-3xl rounded-full transition-all group-hover:bg-[#FDB143]/30" />
+              <img src="/hamada.png" alt="Logo" className="relative w-32 h-32 object-contain rounded-full drop-shadow-glow" />
             </div>
-            <h1 className="text-xl font-bold mb-4 text-center text-[#FDB143]">دخول الأدمن</h1>
-            <input
-              type="email"
-              className="w-full p-3 border rounded-xl mb-3"
-              placeholder="اسم المستخدم (Email)"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <input
-              type="password"
-              className="w-full p-3 border rounded-xl mb-4"
-              placeholder="كلمة المرور"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button
-              onClick={login}
-              className="w-full py-3 rounded-xl font-bold bg-[#FDB143] text-white hover:cursor-pointer hover:bg-[#FDB143]/80"
-            >
-              دخول
-            </button>
-            <button
-              onClick={() => setResetPasswordPopup(true)}
-              className="mt-3 text-sm text-red-600 hover:underline hover:cursor-pointer"
-            >
-              نسيت كلمة المرور؟
-            </button>
-          </div>
+
+            <div className="text-center mb-10">
+              <h1 className="text-2xl md:text-3xl font-black text-white mb-2 tracking-tight">لوحة تحكم الأدمن</h1>
+              <div className="w-12 h-1 bg-[#FDB143] mx-auto rounded-full opacity-50" />
+            </div>
+
+            <div className="w-full space-y-5">
+              <div className="space-y-4">
+                <input
+                  type="email"
+                  className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-white/20 focus:outline-none focus:border-[#FDB143]/50 transition-all font-light"
+                  placeholder="البريد الإلكتروني"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <input
+                  type="password"
+                  className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-white/20 focus:outline-none focus:border-[#FDB143]/50 transition-all font-light"
+                  placeholder="كلمة المرور"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={login}
+                  className="w-full py-5 rounded-2xl bg-[#FDB143] text-black font-black text-lg shadow-xl shadow-[#FDB143]/20 hover:scale-[1.02] active:scale-95 transition-all"
+                >
+                  تسجيل الدخول
+                </button>
+                <button
+                  onClick={() => setResetPasswordPopup(true)}
+                  className="w-full mt-4 text-sm text-white/40 hover:text-[#FDB143] transition-colors font-medium text-center"
+                >
+                  نسيت كلمة المرور؟
+                </button>
+              </div>
+            </div>
+          </motion.div>
         )}
       </div>
     );
   }
 
-
   // ================= ADMIN PANEL =================
   return (
-    <div className="min-h-screen w-full bg-[url('/bg4.jpg')] flex justify-center py-5 md:p-6" dir="rtl">
-      {toast && (
-        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-[#FDB143] text-white px-6 py-3 rounded-xl shadow-lg transition-all">
-          {toast}
-        </div>
-      )}
-      {loading && (
-        <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-40">
-          <div className="bg-white p-6 rounded-xl shadow-lg text-black font-bold">
-            جاري تحميل البيانات...
-          </div>
-        </div>
-      )}
+    <div className="min-h-screen w-full bg-[#040309] font-[Cairo] relative overflow-x-hidden pb-10" dir="rtl">
+      {/* Decorative Glows */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#FDB143]/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#940D11]/5 blur-[120px] rounded-full" />
+      </div>
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="fixed top-8 left-8 z-50 glass-card border-none bg-[#FDB143] text-white px-8 py-3 rounded-2xl font-black shadow-2xl transition-all"
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-[#040309]/80 backdrop-blur-sm flex justify-center items-center z-50"
+          >
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-[#FDB143]/20 border-t-[#FDB143] rounded-full animate-spin" />
+              <p className="text-white/60 text-sm font-bold tracking-widest">جاري معالجة البيانات...</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Inputs مخفية للملفات */}
       <input type="file" accept=".xlsx" id="excelUpload" hidden onChange={importFromExcel} />
 
-      <div className="w-full max-w-7xl px-8 sm:px-8 md:px-24">
-        <div className="flex justify-between items-center mb-6 flex-wrap">
-          <h1 className="text-3xl font-extrabold text-[#FDB143] mb-4">لوحة تحكم Chef Hamada</h1>
-          <div className="flex gap-2 flex-wrap">
-            {/* Order Settings Button */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Header Dashboard */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-panel p-6 mb-10 border border-white/10 rounded-3xl flex flex-col md:flex-row justify-between items-center gap-6"
+        >
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl glass-card flex items-center justify-center border border-white/5">
+              <img src="/hamada.png" alt="Chef Hamada" className="w-14 h-14 object-contain" />
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-black text-white">لوحة الإدارة</h1>
+              <p className="text-white/40 text-sm">Chef Hamada Digital Menu</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-3">
             <button
               onClick={() => setShowOrderSettings(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-yellow-600 text-white font-bold hover:bg-yellow-500 transition hover:cursor-pointer"
+              className="p-3.5 rounded-2xl glass-card text-[#FDB143] border-[#FDB143]/30 hover:border-[#FDB143]/30 hover:text-[#FDB143] hover:bg-[#FDB143]/30 hover:scale-105 transition-all group relative"
+              title="إعدادات الطلب"
             >
-              <FiSettings size={18} />
+              <FiSettings size={22} />
+              <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white hover:text-[#FDB143] hover:bg-[#FDB143]/30 text-black text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">إعدادات الطلب</span>
             </button>
-            {/* Excel Buttons */}
+
             <button
               onClick={exportToExcel}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-600 text-white font-bold hover:bg-green-500 transition hover:cursor-pointer"
+              className="p-3.5 rounded-2xl glass-card text-green-400 hover:border-green-400/30 hover:bg-[#FDB143]/30 hover:scale-105 transition-all group relative"
+              title="تصدير Excel"
             >
-              <FiUpload size={18} />
-            </button>
-            <button
-              onClick={() => document.getElementById
-                ("excelUpload")?.click()}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 transition hover:cursor-pointer"
-            >
-              <FiDownload size={18} />
+              <FiUpload size={22} />
+              <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white hover:text-[#FDB143] hover:bg-[#FDB143]/30 text-black text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">تصدير Excel</span>
             </button>
 
-            {/* JSON Buttons */}
+            <button
+              onClick={() => document.getElementById("excelUpload")?.click()}
+              className="p-3.5 rounded-2xl glass-card text-blue-400 hover:border-blue-400/30 hover:bg-[#FDB143]/30 hover:scale-105 transition-all group relative"
+              title="استيراد Excel"
+            >
+              <FiDownload size={22} />
+              <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white hover:text-[#FDB143] hover:bg-[#FDB143]/30 text-black text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">استيراد Excel</span>
+            </button>
+
             <button
               onClick={exportToJSON}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#940D11] text-white font-bold hover:bg-[#d02c37] transition hover:cursor-pointer"
+              title="نسخة احتياطية"
+              className="p-3.5 rounded-2xl glass-card text-[#FDB143] hover:border-[#FDB143]/30 hover:bg-[#FDB143]/30 hover:scale-105 transition-all group relative"
             >
-              backup
-              <FaDatabase size={18} />
+              <FaDatabase size={22} />
+              <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white hover:text-[#FDB143] hover:bg-[#FDB143]/30 text-black text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">نسخة احتياطية</span>
             </button>
 
-            {/* Logout */}
             <button
               onClick={() => setPopup({ type: "logout" })}
-              className="px-4 py-2 rounded-xl font-bold bg-[#d60208] text-white flex items-center gap-1 hover:text-black hover:bg-[#d2343a] hover:cursor-pointer"
+              className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-[#d60208]/10 text-[#d60208] border border-[#d60208]/20 hover:border-[#d60208]/30 hover:bg-[#d60208]/30 hover:scale-105 transition-all font-bold"
             >
-              <FiLogOut /> خروج
+              <FiLogOut size={18} />
+              <span>خروج</span>
             </button>
           </div>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-12 space-y-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <CategorySection
+                categories={categories}
+                setPopup={setPopup}
+                newCategoryName={newCategoryName}
+                setNewCategoryName={setNewCategoryName}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <ItemSection
+                categories={categories}
+                items={items}
+                popup={popup}
+                setPopup={(p) => {
+                  setPopup(p);
+                  if (p.type === "editItem" && p.id) {
+                    const item = items[p.id];
+                    if (item) {
+                      setEditItemId(p.id);
+                      setEditItemValues({
+                        itemName: item.name,
+                        itemPrice: item.price,
+                        priceTw: item.priceTw || "",
+                        selectedCategory: item.categoryId,
+                        itemIngredients: item.ingredients || "",
+                      });
+                    }
+                  }
+                }}
+              />
+            </motion.div>
+          </div>
         </div>
-
-        <CategorySection
-          categories={categories}
-          setPopup={setPopup}
-          newCategoryName={newCategoryName}
-          setNewCategoryName={setNewCategoryName}
-        />
-
-        <ItemSection
-          categories={categories}
-          items={items}
-          popup={popup}
-          setPopup={(p) => {
-            setPopup(p);
-            if (p.type === "editItem" && p.id) {
-              const item = items[p.id];
-              if (item) {
-                setEditItemId(p.id);
-                setEditItemValues({
-                  itemName: item.name,
-                  itemPrice: item.price,
-                  priceTw: item.priceTw || "",
-                  selectedCategory: item.categoryId,
-                  itemIngredients: item.ingredients || "",
-                });
-              }
-            }
-          }}
-        />
 
         <Popup
           popup={popup}
@@ -638,13 +733,15 @@ export default function Admin() {
       </div>
 
       {/* Order Settings Modal */}
-      {showOrderSettings && orderSettings && (
-        <OrderSettingsModal
-          setShowOrderSettings={setShowOrderSettings}
-          orderSettings={orderSettings} // ⚡ الآن تمرر كل الإعدادات
-          onSave={handleSaveOrderSettings}
-        />
-      )}
+      <AnimatePresence>
+        {showOrderSettings && orderSettings && (
+          <OrderSettingsModal
+            setShowOrderSettings={setShowOrderSettings}
+            orderSettings={orderSettings}
+            onSave={handleSaveOrderSettings}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

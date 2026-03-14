@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { db } from "../../firebase";
 import { ref, onValue } from "firebase/database";
 import CategorySection from "./CategorySection";
+import { motion, AnimatePresence } from "framer-motion";
 
 /* ================= Types ================= */
 export interface Category {
@@ -17,12 +18,12 @@ export interface Item {
   image: string | undefined;
   id: string;
   name: string;
-  price: number;
+  price: number | string;
   ingredients?: string;
-  priceTw?: number;
+  priceTw?: number | string;
   categoryId: string;
   visible?: boolean;
-  star?: boolean; // جديد: الأصناف المميزة
+  star?: boolean;
   createdAt?: number;
 }
 
@@ -48,7 +49,7 @@ const loadFromLocal = () => {
 /* ================= Main Component ================= */
 interface Props {
   onLoadingChange?: (loading: boolean) => void;
-  onFeaturedCheck?: (hasFeatured: boolean) => void; // جديد: يرسل إذا يوجد صنف مميز
+  onFeaturedCheck?: (hasFeatured: boolean) => void;
 }
 
 export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
@@ -57,247 +58,244 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  const [toast, setToast] = useState<{ message: string; color: "green" | "red" } | null>(null);
+  const [toast] = useState<{ message: string; color: "green" | "red" } | null>(null);
   const [orderSystem, setOrderSystem] = useState<boolean>(true);
 
-  /* ================= Load Backup JSON ================= */
-  const loadMenuJson = async () => {
-    try {
-      const res = await fetch("/menu.json");
-      const data = await res.json();
-
-      const cats: Category[] = Object.entries(data.categories || {}).map(
-        ([id, v]: any) => ({
-          id,
-          name: v.name,
-          available: v.available !== false,
-          order: v.order ?? 0,
-          createdAt: v.createdAt || 0,
-        })
-      ).sort((a, b) => a.order - b.order);
-
-      const its: Item[] = Object.entries(data.items || {}).map(
-        ([id, v]: any) => ({
-          id,
-          ...v,
-          createdAt: v.createdAt || 0,
-        })
-      );
-
-      setCategories(cats);
-      setItems(its);
-      setOrderSystem(data.orderSystem ?? true);
-      setLoading(false);
-      onLoadingChange?.(false);
-
-      setToast({ message: "تم تحميل نسخة احتياطية", color: "red" });
-      setTimeout(() => setToast(null), 4000);
-    } catch {
-      setLoading(false);
-      onLoadingChange?.(false);
-    }
-  };
-
-  /* ================= useEffect ================= */
+  /* ================= Load Online ================= */
   useEffect(() => {
     onLoadingChange?.(true);
 
     let timeoutId: number | null = null;
     let firebaseLoaded = false;
 
-    /* ====== Firebase Finish ====== */
     const finishFirebase = (cats: Category[], its: Item[], os: boolean) => {
       firebaseLoaded = true;
       saveToLocal(cats, its, os);
       setLoading(false);
       onLoadingChange?.(false);
       if (timeoutId) clearTimeout(timeoutId);
-
-      setToast({ message: "تم التحميل من قاعدة البيانات", color: "green" });
-      setTimeout(() => setToast(null), 3000);
     };
 
-    /* ================= Online Load ================= */
     const loadOnline = () => {
-      let cats: Category[] = [];
-      let its: Item[] = [];
-      let catsLoaded = false;
-      let itemsLoaded = false;
-      let orderSystemLoaded = false;
-
-      /* ====== Timeout Fallback ====== */
-      timeoutId = window.setTimeout(() => {
-        if (firebaseLoaded) return;
-
-        const cached = loadFromLocal();
-        if (cached) {
-          setCategories(cached.categories || []);
-          setItems(cached.items || []);
-          setOrderSystem(cached.orderSystem ?? true);
-          setLoading(false);
-          onLoadingChange?.(false);
-
-          setToast({ message: "الإنترنت ضعيف، تم تحميل آخر نسخة محفوظة", color: "red" });
-          setTimeout(() => setToast(null), 4000);
-        } else {
-          loadMenuJson();
-        }
-      }, 8000);
-
-      /* ====== Categories ====== */
       onValue(ref(db, "categories"), (snap) => {
         const data = snap.val();
-        cats = data
-          ? Object.entries(data).map(([id, v]: any) => ({
-            id,
-            name: v.name,
-            available: v.available !== false,
-            order: v.order ?? 0,
-            createdAt: v.createdAt || 0,
-          }))
-          : [];
-        cats.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        setCategories(cats);
-        catsLoaded = true;
-        if (itemsLoaded && orderSystemLoaded) finishFirebase(cats, its, orderSystem);
-      });
-
-      /* ====== Items ====== */
-      onValue(ref(db, "items"), (snap) => {
-        const data = snap.val();
-        its = data
+        const cats = data
           ? Object.entries(data).map(([id, v]: any) => ({
             id,
             ...v,
-            createdAt: v.createdAt || 0,
+            available: v.available !== false,
+          }))
+          : [];
+        cats.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+        setCategories(cats);
+        if (firebaseLoaded) saveToLocal(cats, items, orderSystem);
+      });
+
+      onValue(ref(db, "items"), (snap) => {
+        const data = snap.val();
+        const its = data
+          ? Object.entries(data).map(([id, v]: any) => ({
+            id,
+            ...v,
           }))
           : [];
         setItems(its);
-        itemsLoaded = true;
-        if (catsLoaded && orderSystemLoaded) finishFirebase(cats, its, orderSystem);
+        if (firebaseLoaded) saveToLocal(categories, its, orderSystem);
       });
 
-      /* ====== OrderSystem ====== */
       onValue(ref(db, "settings/orderSystem"), (snap) => {
         const val = snap.val();
         setOrderSystem(val ?? true);
-        orderSystemLoaded = true;
-        if (catsLoaded && itemsLoaded) finishFirebase(cats, its, val ?? true);
+        if (firebaseLoaded) saveToLocal(categories, items, val ?? true);
+      });
+
+      // Simple sync check to stop loading
+      onValue(ref(db, ".info/connected"), (snap) => {
+        if (snap.val() === true) {
+          setTimeout(() => finishFirebase(categories, items, orderSystem), 1000);
+        }
       });
     };
 
     if (navigator.onLine) loadOnline();
-    else loadMenuJson();
-  }, [onLoadingChange]);
+    else {
+      const cached = loadFromLocal();
+      if (cached) {
+        setCategories(cached.categories);
+        setItems(cached.items);
+        setOrderSystem(cached.orderSystem);
+        setLoading(false);
+        onLoadingChange?.(false);
+      }
+    }
+  }, []);
 
-  /* ================= Check Featured Items ================= */
   useEffect(() => {
     const hasFeatured = items.some(item => item.star === true);
     onFeaturedCheck?.(hasFeatured);
   }, [items, onFeaturedCheck]);
 
-  /* ========= Filter Available Categories ========= */
   const availableCategories = categories.filter((cat) => cat.available);
+  const scrollCategories = availableCategories.filter((cat) => items.some((i) => i.categoryId === cat.id));
 
-  /* ========= Loading UI ========= */
   if (loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[url('/bg.jpg')] md:bg-[url('/bg4.jpg')] bg-cover bg-center bg-no-repeat bg-fixed">
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-[#040309] font-[Cairo]"
+      >
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FDB143]/10 blur-[120px] rounded-full animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#940D11]/10 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+        </div>
 
-        <div className="relative z-10 flex flex-col items-center px-12 py-14 rounded-[3rem] bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_0_80px_rgba(253,177,67,0.25)]">
-          <div className="absolute -inset-8 rounded-[4rem] bg-[#FDB143]/10 blur-3xl animate-pulse" />
-
-          <div className="relative w-48 h-48 mb-10">
-            <img
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="relative z-10 flex flex-col items-center px-8 py-12 rounded-[2.5rem] glass-panel border border-white/10 shadow-2xl"
+        >
+          <div className="relative w-32 h-32 mb-8">
+            <motion.img
+              initial={{ y: 0 }}
+              animate={{ y: -10 }}
+              transition={{ repeat: Infinity, repeatType: "reverse", duration: 2, ease: "easeInOut" }}
               src="/hamada.png"
               alt="Logo"
-              className="w-full h-full object-contain rounded-full shadow-2xl animate-floatSlow"
+              className="w-full h-full object-contain rounded-full drop-shadow-[0_0_15px_rgba(253,177,67,0.3)]"
             />
           </div>
 
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-widest text-[#F7F3E8]">
-            تحضير التجربة
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2">
+            Chef Hamada
           </h2>
-
-          <div className="w-24 h-[2px] bg-[#FDB143]/70 rounded-full my-5" />
-
-          <p className="text-[#F7F3E8]/70 text-lg font-[Cairo] text-center">
-            الفن يحتاج لحظة صبر
+          <div className="w-12 h-1 bg-linear-to-r from-transparent via-[#FDB143] to-transparent rounded-full mb-6" />
+          <p className="text-white/60 text-sm md:text-base font-light tracking-wide animate-pulse">
+            جاري التحضير لتجربة طعام لا تنسى
           </p>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     );
   }
 
-  /* ========= Main Menu UI ========= */
   return (
-    <main className="max-w-4xl mx-auto px-0 pb-10 space-y-10 font-[Alamiri] text-[#F5F8F7]">
-      {toast && (
-        <div
-          className={`fixed top-6 right-6 px-4 py-3 rounded-2xl font-bold shadow-2xl z-50 text-white transition
-          ${toast.color === "green" ? "bg-[#FDB143]" : "bg-[#940D11]"}`}
-        >
-          {toast.message}
-        </div>
-      )}
+    <main className="max-w-4xl mx-auto px-4 pb-20 space-y-12 font-[Almarai] text-white overflow-x-hidden">
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-8 right-8 px-6 py-3 rounded-2xl font-bold shadow-2xl z-50 text-white border border-white/10 backdrop-blur-md
+            ${toast.color === "green" ? "bg-[#FDB143]/90 text-black" : "bg-[#940D11]/90"}`}
+          >
+            {toast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* ===== Check if there are items ===== */}
-      {items.length === 0 || (activeCategory && items.filter(i => i.categoryId === activeCategory).length === 0) ? (
-        <p className="text-center text-[#F5F8F7]/70 text-lg font-[Cairo] mt-10">
-          لا توجد أصناف حالياً
-        </p>
-      ) : (
-        <>
-          {/* ===== Filter Tabs ===== */}
-          <div className="flex flex-wrap gap-3 justify-center">
+      <div className="pt-8">
+        <div className="flex flex-col items-center mb-10">
+
+          <motion.h1
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-3xl font-black text-gradient-gold uppercase tracking-wider"
+          >
+          </motion.h1>
+          <div className="w-56 h-1 bg-linear-to-r from-transparent via-[#FDB143] to-transparent rounded-full mt-4" />
+
+        </div>
+
+        {/* Category Tabs - Fully Wrapping Modern UI, Styled like ItemRow */}
+        <div className="sticky top-4 z-40 py-4">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 p-2 rounded-3xl
+                  bg-linear-to-br from-[#0b0a0e]/90 to-[#040309]/95
+                  border border-[#FDB143]/30 shadow-[0_4px_15px_rgba(0,0,0,0.3),inset_0_0_10px_rgba(253,177,67,0.05)]">
+
+            {/* All Categories */}
             <button
               onClick={() => setActiveCategory(null)}
-              className={`rounded-2xl font-bold transition font-[Cairo]
-              ${activeCategory === null
-                  ? "bg-[#FDB143] text-[#040309] text-md px-3 py-2"
-                  : "bg-[#F5F8F7] text-[#040309]/80 text-xs px-2 py-1"
-                }`}
+              className={`relative px-4 py-2.5 md:px-6 md:py-3 rounded-2xl text-xs md:text-sm font-bold transition-all duration-300
+        ${activeCategory === null
+                  ? "text-black z-10"
+                  : "text-white/60 hover:text-white hover:bg-[#FFD369]/10"}`
+              }
             >
+              {activeCategory === null && (
+                <motion.div
+                  layoutId="activeTabMenu"
+                  className="absolute inset-0 bg-linear-to-r from-[#FDB143] to-[#FFD369] hover:from-[#FFD369] hover:to-[#FDB143] rounded-2xl -z-10 shadow-[0_4px_15px_rgba(253,177,67,0.3)] border border-[#FDB143]/50"
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                />
+              )}
               جميع الأصناف
             </button>
 
-            {availableCategories
-              .filter((cat) => items.some((i) => i.categoryId === cat.id))
-              .map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={`rounded-2xl font-bold transition font-[Cairo]
-                  ${activeCategory === cat.id
-                      ? "bg-[#FDB143] text-[#040309] text-md px-3 py-2"
-                      : "bg-[#F5F8F7] text-[#040309]/80 text-xs px-2 py-1"
-                    }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-          </div>
-
-          {/* ===== Sections ===== */}
-          {(activeCategory
-            ? availableCategories.filter((c) => c.id === activeCategory)
-            : availableCategories
-          ).map((cat) => {
-            const catItems = items.filter((i) => i.categoryId === cat.id);
-            if (!catItems.length) return null;
-
-            return (
-              <CategorySection
+            {scrollCategories.map((cat) => (
+              <button
                 key={cat.id}
-                category={cat}
-                items={catItems}
-                orderSystem={orderSystem}
-              />
-            );
-          })}
-        </>
-      )}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`relative px-4 py-2.5 md:px-6 md:py-3 rounded-2xl text-xs md:text-sm font-bold transition-all duration-300
+          ${activeCategory === cat.id
+                    ? "text-black z-10"
+                    : "text-white/60 hover:text-white hover:bg-[#FFD369]/10"}`
+                }
+              >
+                {activeCategory === cat.id && (
+                  <motion.div
+                    layoutId="activeTabMenu"
+                    className="absolute inset-0 bg-linear-to-r from-[#FDB143] to-[#FFD369] rounded-2xl -z-10 shadow-[0_4px_15px_rgba(253,177,67,0.3)] border border-[#FDB143]/50"
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  />
+                )}
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-16">
+        {items.length === 0 ? (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center text-white/50 text-lg font-light py-20"
+          >
+            لا توجد أصناف حالياً
+          </motion.p>
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeCategory || "all"}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-12"
+            >
+              {(activeCategory
+                ? availableCategories.filter((c) => c.id === activeCategory)
+                : availableCategories
+              ).map((cat) => {
+                const catItems = items.filter((i) => i.categoryId === cat.id);
+                if (!catItems.length) return null;
+
+                return (
+                  <CategorySection
+                    key={cat.id}
+                    category={cat}
+                    items={catItems}
+                    orderSystem={orderSystem}
+                  />
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
+        )}
+      </div>
     </main>
   );
 }

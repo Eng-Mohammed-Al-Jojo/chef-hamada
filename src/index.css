@@ -1,6 +1,24 @@
 @import "tailwindcss";
 
+:root {
+  /* Premium Color Palette */
+  --color-primary: #FDB143;
+  --color-primary-light: #FFD369;
+  --color-secondary: #940D11;
+  --color-bg-dark: #0b0a0e;
+  --color-bg-darker: #040309;
+  --color-text-light: #F7F3E8;
+  --color-text-dim: rgba(247, 243, 232, 0.7);
 
+  /* Glassmorphism Defaults */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 12px;
+
+  /* Shadows */
+  --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px rgba(253, 177, 67, 0.2);
+}
 
 @font-face {
   font-family: 'Playpen Sans Arabic';
@@ -8,7 +26,6 @@
   font-weight: 400;
   font-style: normal;
 }
-
 
 @font-face {
   font-family: 'Lemonada';
@@ -20,13 +37,11 @@
 @font-face {
   font-family: 'BalooBhaijaan2-Bold';
   src: url('/fonts/BalooBhaijaan2-Bold.ttf') format('truetype');
-  font-weight: 70;
-  font-style: extra-bold;
+  font-weight: 700;
+  font-style: normal;
 }
 
-
-
-/* Cairo Thin */
+/* Cairo Fonts */
 @font-face {
   font-family: 'Cairo';
   src: url('/fonts/Cairo-Thin.ttf') format('truetype');
@@ -34,7 +49,6 @@
   font-style: normal;
 }
 
-/* Cairo ExtraLight */
 @font-face {
   font-family: 'Cairo';
   src: url('/fonts/Cairo-ExtraLight.ttf') format('truetype');
@@ -42,7 +56,6 @@
   font-style: normal;
 }
 
-/* Cairo Light */
 @font-face {
   font-family: 'Cairo';
   src: url('/fonts/Cairo-Light.ttf') format('truetype');
@@ -50,7 +63,6 @@
   font-style: normal;
 }
 
-/* Cairo Regular */
 @font-face {
   font-family: 'Cairo';
   src: url('/fonts/Cairo-Regular.ttf') format('truetype');
@@ -58,7 +70,6 @@
   font-style: normal;
 }
 
-/* Cairo Medium */
 @font-face {
   font-family: 'Cairo';
   src: url('/fonts/Cairo-Medium.ttf') format('truetype');
@@ -66,7 +77,6 @@
   font-style: normal;
 }
 
-/* Cairo SemiBold */
 @font-face {
   font-family: 'Cairo';
   src: url('/fonts/Cairo-SemiBold.ttf') format('truetype');
@@ -74,7 +84,6 @@
   font-style: normal;
 }
 
-/* Cairo Bold */
 @font-face {
   font-family: 'Cairo';
   src: url('/fonts/Cairo-Bold.ttf') format('truetype');
@@ -82,7 +91,6 @@
   font-style: normal;
 }
 
-/* Cairo ExtraBold */
 @font-face {
   font-family: 'Cairo';
   src: url('/fonts/Cairo-ExtraBold.ttf') format('truetype');
@@ -90,7 +98,7 @@
   font-style: normal;
 }
 
-/* Amiri Light */
+/* Almarai Fonts */
 @font-face {
   font-family: 'Almarai';
   src: url('/fonts/Almarai-Light.ttf') format('truetype');
@@ -98,7 +106,6 @@
   font-style: normal;
 }
 
-/* Amiri Regular */
 @font-face {
   font-family: 'Almarai';
   src: url('/fonts/Almarai-Regular.ttf') format('truetype');
@@ -106,7 +113,6 @@
   font-style: normal;
 }
 
-/* Amiri Bold */
 @font-face {
   font-family: 'Almarai';
   src: url('/fonts/Almarai-Bold.ttf') format('truetype');
@@ -114,7 +120,6 @@
   font-style: normal;
 }
 
-/* Amiri Extra Bold */
 @font-face {
   font-family: 'Almarai';
   src: url('/fonts/Almarai-ExtraBold.ttf') format('truetype');
@@ -122,12 +127,38 @@
   font-style: normal;
 }
 
-
 body {
-  font-family: 'Playpen Sans Arabic', sans-serif;
+  font-family: 'Almarai', 'Cairo', sans-serif;
+  background-color: var(--color-bg-darker);
+  color: var(--color-text-light);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* Premium Utilities */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+}
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow-premium);
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #FDB143 0%, #FFD369 50%, #FDB143 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Improved Animations */
 @keyframes pulseScale {
 
   0%,
@@ -136,108 +167,132 @@ body {
   }
 
   50% {
-    transform: scale(1.08);
+    transform: scale(1.05);
   }
 }
 
 .animate-pulseScale {
-  animation: pulseScale 2s ease-in-out infinite;
+  animation: pulseScale 3s ease-in-out infinite;
 }
 
-@keyframes textGradient {
-  0% {
-    background-position: 0% 50%;
-  }
+@keyframes float {
 
-  50% {
-    background-position: 100% 50%;
-  }
-
+  0%,
   100% {
-    background-position: 0% 50%;
-  }
-}
-
-.animate-textGradient {
-  background-size: 200% 200%;
-  animation: textGradient 3s ease infinite;
-}
-
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  100% {
-    opacity: 1;
     transform: translateY(0);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 1.5s ease forwards;
-}
-
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
-
-.animate-slideUp {
-  animation: slideUp 0.25s ease-out;
-}
-
-@keyframes floatSlow {
-  0% {
-    transform: translateY(0px);
   }
 
   50% {
     transform: translateY(-10px);
   }
+}
 
-  100% {
-    transform: translateY(0px);
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 
-.animate-floatSlow {
-  animation: floatSlow 4s ease-in-out infinite;
+.animate-fadeInScale {
+  animation: fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* أنيميشن Toast */
+/* Toast Animation Refined */
 @keyframes toast-show {
   0% {
     opacity: 0;
-    transform: translate(-50%, -150%) scale(0.9);
+    transform: translate(-50%, 20px) scale(0.9);
   }
 
-  10% {
+  15% {
     opacity: 1;
-    transform: translate(-50%, -100%) scale(1.05);
+    transform: translate(-50%, 0) scale(1);
   }
 
-  80% {
+  85% {
     opacity: 1;
-    transform: translate(-50%, -100%) scale(1);
+    transform: translate(-50%, 0) scale(1);
   }
 
   100% {
     opacity: 0;
-    transform: translate(-50%, -150%) scale(0.95);
+    transform: translate(-50%, -10px) scale(0.95);
   }
 }
 
-/* class لإستدعاء الانيميشن */
-.animate-toast-show {
-  animation: toast-show 1s ease-in-out forwards;
+.animate-toast-premium {
+  animation: toast-show 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Background Gradient Animation */
+@keyframes float-slow {
+  0% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-20px) translateX(10px) rotate(45deg);
+  }
+
+  100% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 25s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: scale(1.05) rotate(2deg);
+    opacity: 1;
+  }
+}
+
+.animate-glowPulse {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes scalePulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+.animate-scalePulse {
+  animation: scalePulse 2s ease-in-out infinite;
 }

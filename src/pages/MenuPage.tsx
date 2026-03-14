@@ -15,25 +15,52 @@ export default function MenuPage() {
       dir="rtl"
       className="
         min-h-screen flex flex-col
-        bg-[url('/bg4.jpg')] 
-        bg-scroll md:bg-fixed md:bg-no-repeat md:bg-cover
         text-[#F5F8F7]
         font-[Cairo]
         relative
       "
     >
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-[#040309] opacity-50 md:backdrop-blur-sm pointer-events-none"></div>
+      {/* Fixed Premium Animated Gold Background */}
+      <div className="fixed inset-0 z-[-2] w-full h-full bg-black overflow-hidden">
+        {/* Floating Golden Shapes */}
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className={`
+        absolute rounded-full
+        bg-linear-to-br from-[#FFD369]/50 to-[#FDB143]/50
+        opacity-20
+        animate-float-slow
+      `}
+            style={{
+              width: `${50 + i * 40}px`,
+              height: `${50 + i * 40}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${i * 3}s`,
+            }}
+          />
+        ))}
 
+        {/* Overlay for depth */}
+        <div className="absolute inset-0 bg-black/40" />
+      </div>
       {/* Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
-        {/* Logo */}
+        {/* Logo with Golden Glow */}
         <div className="flex justify-center py-10 relative">
-          <img
-            src="/hamada.png"
-            alt="Logo"
-            className="w-56 md:w-60 object-contain drop-shadow-[0_10px_40px_rgba(253,177,67,0.4)] animate-pulseScale"
-          />
+          <div className="relative">
+            {/* Glow behind logo */}
+            <div className="absolute inset-0 rounded-full
+                    bg-gradient-to-br from-[#FFD369]/50 via-[#FFD369]/30 to-[#FDB143]/50
+                    blur-3xl animate-glowPulse pointer-events-none z-[-1]" />
+
+            <img
+              src="/hamada.png"
+              alt="Logo"
+              className="w-56 md:w-60 object-contain drop-shadow-[0_10px_40px_rgba(253,177,67,0.4)] animate-scalePulse"
+            />
+          </div>
         </div>
 
         {/* Menu */}

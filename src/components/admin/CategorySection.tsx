@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FiPlus, FiTrash2, FiEdit, FiCheck } from "react-icons/fi";
 import { db } from "../../firebase";
 import { ref, update } from "firebase/database";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   DndContext,
@@ -43,6 +44,7 @@ const SortableCategory: React.FC<{
   startEditing: (id: string, name: string) => void;
   toggleAvailability: (id: string, current: boolean) => void;
   setPopup: (popup: PopupState) => void;
+  index: number;
 }> = ({
   cat,
   editingId,
@@ -52,97 +54,111 @@ const SortableCategory: React.FC<{
   startEditing,
   toggleAvailability,
   setPopup,
+  index,
 }) => {
-    const { attributes, listeners, setNodeRef, transform, transition } =
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
       useSortable({ id: cat.id });
 
     const style: React.CSSProperties = {
       transform: CSS.Transform.toString(transform),
       transition,
       touchAction: "none",
+      zIndex: isDragging ? 50 : 1,
     };
 
     return (
-      <div
+      <motion.div
         ref={setNodeRef}
         style={style}
         {...attributes}
-        className="
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4, delay: index * 0.05 }}
+        className={`
         relative
-        bg-white
+        glass-card
         rounded-2xl
-        shadow-sm
+        border border-white/5
         flex
         overflow-hidden
-      "
+        mb-2 
+        ${isDragging ? "opacity-50 scale-[1.02] border-[#FDB143]/30" : ""}
+      `}
       >
         {/* Drag Rail */}
         <div
           {...listeners}
           className="
           cursor-grab select-none
-          bg-linear-to-b from-gray-300 to-gray-200
-          w-12 sm:w-10
+          bg-white/5
+          w-12 sm:w-14
           flex items-center justify-center
           active:scale-95
-          transition
+          transition-colors
+          hover:bg-white/10
+          border border-white/5
         "
         >
-          <HiOutlineArrowsUpDown className="w-5 h-5 md:w-6 md:h-6 text-gray-700" />
+          <HiOutlineArrowsUpDown className="w-5 h-5 text-white/20 group-hover:text-[#FDB143]" />
         </div>
 
         {/* المحتوى */}
-        <div className="flex-1 p-2 flex flex-col gap-2">
-          {editingId === cat.id ? (
-            <div className="flex items-center gap-2">
-              <input
-                className="flex-1 p-2 border rounded-xl"
-                value={tempName}
-                onChange={(e) => setTempName(e.target.value)}
-              />
-              <button
-                onClick={() => saveEdit(cat.id)}
-                className="text-green-600 p-2"
-              >
-                <FiCheck />
-              </button>
-            </div>
-          ) : (
-            <span className="text-lg font-bold text-gray-800">
-              {cat.name}
-            </span>
-          )}
+        <div className="flex-1 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex-1">
+            {editingId === cat.id ? (
+              <div className="flex items-center gap-2">
+                <input
+                  className="flex-1 px-4 py-2 text-sm bg-white/5 border border-[#FDB143]/30 rounded-xl text-white focus:outline-none"
+                  value={tempName}
+                  onChange={(e) => setTempName(e.target.value)}
+                  autoFocus
+                />
+                <button
+                  onClick={() => saveEdit(cat.id)}
+                  className="w-10 h-10 flex items-center justify-center bg-green-500/20 text-green-400 rounded-xl hover:bg-green-500 hover:text-white transition-all"
+                >
+                  <FiCheck />
+                </button>
+              </div>
+            ) : (
+              <span className="text-sm md:text-lg font-black text-white px-2">
+                {cat.name}
+              </span>
+            )}
+          </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => startEditing(cat.id, cat.name)}
-                className="text-blue-600 p-2 rounded-xl hover:bg-blue-50 transition"
+                className="w-10 h-10 flex items-center rounded-xl justify-center glass-card text-white/40 hover:text-blue-400 hover:border-blue-400/30 transition-all"
+                title="تعديل"
               >
-                <FiEdit />
+                <FiEdit size={16} />
               </button>
 
               <button
                 onClick={() => setPopup({ type: "deleteCategory", id: cat.id })}
-                className="text-red-600 p-2 rounded-xl hover:bg-red-50 transition"
+                className="w-10 h-10 flex items-center rounded-xl justify-center glass-card text-white/40 hover:text-red-400 hover:border-red-400/30 transition-all"
+                title="حذف"
               >
-                <FiTrash2 />
+                <FiTrash2 size={16} />
               </button>
             </div>
 
             <button
               onClick={() => toggleAvailability(cat.id, cat.available ?? true)}
-              className={`relative w-14 h-7 rounded-full transition-colors
-              ${cat.available ? "bg-green-500" : "bg-gray-300"}`}
+              className={`relative w-14 h-7 rounded-full transition-all duration-500
+              ${cat.available ? "bg-[#FDB143]" : "bg-white/10"}`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-all
-                ${cat.available ? "translate-x-7 scale-110" : ""}`}
+                className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-lg transition-all duration-500
+                ${cat.available ? "translate-x-7" : ""}`}
               />
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   };
 
@@ -206,95 +222,105 @@ const CategorySection: React.FC<Props> = ({
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext
-        items={categoriesArray.map((c) => c.id)}
-        strategy={verticalListSortingStrategy}
-      >
-        <div
-          className="bg-white p-4 rounded-3xl mb-6 border-4"
-          style={{ borderColor: "#FDB143" }}
-        >
-          <h2 className="font-bold mb-3 text-2xl">الأقسام</h2>
+    <div className="glass-panel p-8 rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden group">
+      {/* Background Accent */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-[#FDB143]/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
 
-
-
-          {/* إضافة قسم */}
-          <div className="flex gap-2 flex-wrap mb-4">
-            <input
-              className="flex-1 p-2 border rounded-xl min-w-[160px]"
-              placeholder="اسم القسم"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-            />
-            <button
-              onClick={() => setPopup({ type: "addCategory" })}
-              className="px-4 rounded-xl bg-[#FDB143] text-white hover:bg-[#FDB143]/80"
-            >
-              <FiPlus className="text-xl" />
-            </button>
-          </div>
-          {/* زر عرض الأقسام */}
-          <button
-            onClick={() => setOpenCategories((p) => !p)}
-            className="
-              w-full mb-4
-              flex items-center justify-between
-              px-4 py-3
-              bg-gray-100
-              rounded-xl
-              font-bold
-              hover:bg-gray-200
-              transition
-            "
-          >
-            <span>عرض الأقسام</span>
-
-            <div className="flex items-center gap-2">
-              <span className="bg-[#FDB143] text-white text-sm px-2 py-0.5 rounded-full">
-                {categoriesArray.length}
-              </span>
-
-              <HiChevronDown
-                className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${openCategories ? "rotate-180" : "rotate-0"
-                  }`}
-              />
-            </div>
-          </button>
-
-          {/* Accordion Animation */}
-          <div
-            className={`
-              overflow-hidden
-              transition-all duration-500 ease-in-out
-              ${openCategories
-                ? "max-h-[3000px] opacity-100 scale-100"
-                : "max-h-0 opacity-0 scale-[0.98]"}
-            `}
-          >
-            <div className="flex flex-col gap-2 pt-2">
-              {categoriesArray.map((cat) => (
-                <SortableCategory
-                  key={cat.id}
-                  cat={cat}
-                  editingId={editingId}
-                  tempName={tempName}
-                  setTempName={setTempName}
-                  saveEdit={saveEdit}
-                  startEditing={startEditing}
-                  toggleAvailability={toggleAvailability}
-                  setPopup={setPopup}
-                />
-              ))}
-            </div>
-          </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-white mb-2">إدارة الأقسام</h2>
+          <p className="text-white/40 text-sm font-light">قم بترتيب وتعديل تصنيفات المنيو</p>
         </div>
-      </SortableContext>
-    </DndContext>
+
+        <div className="flex gap-3">
+          <input
+            className="flex-1 md:w-64 px-5 py-4 text-sm bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-white/20 focus:outline-none focus:border-[#FDB143]/50 transition-all font-light"
+            placeholder="أضف قسماً جديداً..."
+            value={newCategoryName}
+            onChange={(e) => setNewCategoryName(e.target.value)}
+          />
+          <button
+            onClick={() => setPopup({ type: "addCategory" })}
+            className="w-14 h-14 flex items-center justify-center rounded-2xl bg-[#FDB143] text-black shadow-lg shadow-[#FDB143]/20 hover:scale-[1.05] active:scale-95 transition-all"
+          >
+            <FiPlus size={24} />
+          </button>
+        </div>
+      </div>
+
+      <button
+        onClick={() => setOpenCategories((p) => !p)}
+        className="
+          w-full mb-6
+          flex items-center justify-between
+          px-6 py-5
+          glass-card
+          border-white/5
+          rounded-3xl
+          hover:bg-white/5
+          transition-all
+          group/btn
+        "
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-white/40">
+            <HiChevronDown
+              className={`w-6 h-6 transition-transform duration-500 ${openCategories ? "rotate-180" : "rotate-0"}`}
+            />
+          </div>
+          <span className="text-sm md:text-base font-bold text-white/80">عرض جميع الأقسام</span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="bg-[#FDB143]/10 text-[#FDB143] text-xs md:text-sm font-black px-4 py-1.5 rounded-full border border-[#FDB143]/20">
+            {categoriesArray.length} قسم
+          </span>
+        </div>
+      </button>
+
+      {/* Accordion with Framer Motion */}
+      <AnimatePresence>
+        {openCategories && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: "spring", duration: 0.6, bounce: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="pt-2">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={categoriesArray.map((c) => c.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="flex flex-col">
+                    {categoriesArray.map((cat, index) => (
+                      <SortableCategory
+                        key={cat.id}
+                        cat={cat}
+                        editingId={editingId}
+                        tempName={tempName}
+                        setTempName={setTempName}
+                        saveEdit={saveEdit}
+                        startEditing={startEditing}
+                        toggleAvailability={toggleAvailability}
+                        setPopup={setPopup}
+                        index={index}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

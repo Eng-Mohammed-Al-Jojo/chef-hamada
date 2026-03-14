@@ -1,37 +1,40 @@
 import ItemRow from "./ItemRow";
 import type { Category, Item } from "./Menu";
+import { motion } from "framer-motion";
 
 interface Props {
   category: Category;
   items: Item[];
-  orderSystem: boolean; // <-- لازم يجي من Menu
+  orderSystem: boolean;
 }
 
 export default function CategorySection({ category, items, orderSystem }: Props) {
   return (
-    <section className="mb-24 px-4 md:px-0">
-      <div className="mb-14 flex items-center justify-center gap-4 w-full">
-        <span className="flex-1 h-px bg-linear-to-r from-transparent via-[#FDB143]/70 to-transparent"></span>
+    <motion.section
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      className="mb-20 px-4 md:px-0"
+    >
+      <div className="mb-10 flex items-center justify-center gap-6 w-full group">
+        <div className="flex-1 h-px bg-linear-to-r from-transparent via-[#FDB143]/40 to-transparent transition-all duration-700 group-hover:via-[#FDB143]" />
 
-        <h2 className="
-      font-[Almarai] font-extrabold
-      text-[#FDB143]
-      drop-shadow-[0_4px_20px_rgba(253,177,67,0.45)]
-      tracking-wide
-      text-center text-3xl md:text-4xl
-    ">
+        <h2 className="font-extrabold text-[#FDB143] tracking-widest text-center text-2xl md:text-3xl uppercase">
           {category.name}
         </h2>
 
-        <span className="flex-1 h-px bg-linear-to-r from-transparent via-[#FDB143]/70 to-transparent"></span>
+        <div className="flex-1 h-px bg-linear-to-r from-transparent via-[#FDB143]/40 to-transparent transition-all duration-700 group-hover:via-[#FDB143]" />
       </div>
 
-      <div className="flex flex-col gap-3">
-        {items.map(item => (
-          <ItemRow key={item.id} item={item} orderSystem={orderSystem} />
+      <div className="grid grid-cols-1 gap-4">
+        {items.map((item) => (
+          <ItemRow
+            key={item.id}
+            item={item}
+            orderSystem={orderSystem}
+          />
         ))}
       </div>
-    </section>
-
+    </motion.section>
   );
 }
