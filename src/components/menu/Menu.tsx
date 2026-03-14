@@ -180,7 +180,7 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
   }
 
   return (
-    <main className="max-w-4xl mx-auto px-4 pb-20 space-y-12 font-[Almarai] text-white overflow-x-hidden">
+    <main className="max-w-4xl mx-auto  pb-20 space-y-12 font-[Almarai] text-white overflow-x-hidden">
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -209,7 +209,7 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
         </div>
 
         {/* Category Tabs - Fully Wrapping Modern UI, Styled like ItemRow */}
-        <div className="sticky top-4 z-40 py-4">
+        <div className="sticky top-4 z-40 py-4 px-4">
           <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 p-2 rounded-3xl
                   bg-linear-to-br from-[#0b0a0e]/90 to-[#040309]/95
                   border border-[#FDB143]/30 shadow-[0_4px_15px_rgba(0,0,0,0.3),inset_0_0_10px_rgba(253,177,67,0.05)]">

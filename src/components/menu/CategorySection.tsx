@@ -26,7 +26,7 @@ export default function CategorySection({ category, items, orderSystem }: Props)
         <div className="flex-1 h-px bg-linear-to-r from-transparent via-[#FDB143]/40 to-transparent transition-all duration-700 group-hover:via-[#FDB143]" />
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-0 w-full">
         {items.map((item) => (
           <ItemRow
             key={item.id}

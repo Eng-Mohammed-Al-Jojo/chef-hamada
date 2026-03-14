@@ -44,7 +44,7 @@ export default function ItemRow({ item, orderSystem }: Props) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className={`relative w-full rounded-3xl`}
+      className="relative mx-auto rounded-3xl mb-2 w-full"
     >
       {/* Card الخلفية */}
       <motion.div
@@ -61,14 +61,13 @@ export default function ItemRow({ item, orderSystem }: Props) {
         )}
 
         {/* الصورة + الاسم + المكونات */}
-        <div className="flex gap-4 flex-1 min-w-0 z-10 items-center">
+        <div className="flex gap-3 flex-1 min-w-0 z-10 items-center">
           <div className="flex flex-col justify-center min-w-0 w-full h-full">
             <h3
               className={`text-sm sm:text-base md:text-lg font-extrabold leading-snug
                 ${unavailable
                   ? "line-through decoration-gray-400/70 text-gray-300"
-                  : "text-[#FFD369] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"}
-              `}
+                  : "text-[#FFD369] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"}`}
             >
               {item.name}
             </h3>
@@ -87,24 +86,16 @@ export default function ItemRow({ item, orderSystem }: Props) {
         <div className={`flex shrink-0 gap-2 flex-col justify-center ${hasImage ? "items-center" : ""}`}>
           {/* Takeaway Price Badge */}
           {hasTakeawayPrice && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative flex items-center gap-2"
-            >
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative flex items-center gap-2">
               <div
-                className={`relative flex items-center justify-center px-3 py-2 min-w-[60px] sm:min-w-[80px]
+                className={`relative flex items-center justify-center px-3 py-2 min-w-[70px] sm:min-w-[90px]
                   gap-2 rounded-xl bg-black/40 border border-[#FDB143]/30
-                  transition-all duration-200 ${unavailable ? "opacity-50 line-through" : ""}
-                `}
+                  transition-all duration-200 ${unavailable ? "opacity-50 line-through" : ""}`}
               >
                 <span className="absolute -top-2 -right-2 bg-[#FFD369] text-black text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
                   T.W
                 </span>
-                <span
-                  className={`text-sm sm:text-base font-extrabold whitespace-nowrap
-                    ${unavailable ? "text-gray-300 line-through" : "text-[#FFD369]"}`}
-                >
+                <span className={`text-sm sm:text-base font-extrabold whitespace-nowrap ${unavailable ? "text-gray-300 line-through" : "text-[#FFD369]"}`}>
                   {item.priceTw}₪
                 </span>
                 {orderSystem && !unavailable && (
@@ -116,11 +107,7 @@ export default function ItemRow({ item, orderSystem }: Props) {
                         : "bg-linear-to-r from-[#FFD369]/90 to-[#FDB143]/90 hover:scale-105"}
                       transition-all duration-200`}
                   >
-                    {addedPrice === Number(item.priceTw) ? (
-                      <FaCheck className="animate-pulse text-md" />
-                    ) : (
-                      <span className="text-lg md:text-xl">+</span>
-                    )}
+                    {addedPrice === Number(item.priceTw) ? <FaCheck className="animate-pulse text-md" /> : <span className="text-lg md:text-xl">+</span>}
                   </button>
                 )}
               </div>
@@ -137,14 +124,11 @@ export default function ItemRow({ item, orderSystem }: Props) {
                 key={price}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`flex items-center justify-center px-2 py-2 min-w-[60px] sm:min-w-[80px]
+                className={`flex items-center justify-center px-3 py-2 min-w-[70px] sm:min-w-[90px]
                   gap-2 rounded-xl bg-black/40 border border-[#FDB143]/30 backdrop-blur-sm
                   transition-all duration-200 ${unavailable ? "opacity-50 line-through" : ""}`}
               >
-                <span
-                  className={`text-sm sm:text-base font-extrabold whitespace-nowrap
-                    ${unavailable ? "text-gray-300 line-through" : "text-[#FFD369]"}`}
-                >
+                <span className={`text-sm sm:text-base font-extrabold whitespace-nowrap ${unavailable ? "text-gray-300 line-through" : "text-[#FFD369]"}`}>
                   {price}₪
                 </span>
                 {orderSystem && !unavailable && (
