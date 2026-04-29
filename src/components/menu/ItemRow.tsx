@@ -1,21 +1,21 @@
 import { type Item } from "./Menu";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useCart } from "../../context/CartContext";
 import { FaCheck } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface Props {
   item: Item;
   orderSystem: boolean;
+  showGlobalToast: (message: string, color?: "green" | "red") => void;
 }
 
-export default function ItemRow({ item, orderSystem }: Props) {
+const ItemRow = ({ item, orderSystem, showGlobalToast }: Props) => {
   const prices = String(item.price).split(",");
   const unavailable = item.visible === false;
 
   const { addItem } = useCart();
   const [addedPrice, setAddedPrice] = useState<number | null>(null);
-  const [showToast, setShowToast] = useState(false);
 
   const hasIngredients = !!item.ingredients;
   const hasImage = !!item.image;
@@ -29,22 +29,20 @@ export default function ItemRow({ item, orderSystem }: Props) {
   const handleAdd = (price: number) => {
     addItem(item, price);
     setAddedPrice(price);
-    setShowToast(true);
+    showGlobalToast("تمت إضافة الصنف ، تفقد الطلب");
 
     setTimeout(() => {
       setAddedPrice(null);
-      setShowToast(false);
     }, 1000);
   };
 
   return (
     <motion.div
-      layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="relative mx-auto rounded-3xl mb-2 w-full"
+      className="relative mx-auto rounded-3xl mb-2 w-full will-change-transform"
     >
       {/* Card الخلفية */}
       <motion.div
@@ -146,26 +144,8 @@ export default function ItemRow({ item, orderSystem }: Props) {
           })}
         </div>
       </motion.div>
-
-      {/* Toast */}
-      <AnimatePresence>
-        {showToast && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: -10 }}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-full
-              bg-linear-to-r from-[#FFD369] to-[#FDB143]
-              text-black font-bold px-4 py-2 rounded-2xl
-              shadow-lg shadow-black/50
-              flex items-center gap-2
-              z-50 pointer-events-none"
-          >
-            <FaCheck className="text-black w-4 h-4" />
-            <span className="text-sm sm:text-base">تمت إضافة الصنف ، تفقد الطلب</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
-}
+};
+
+export default memo(ItemRow);

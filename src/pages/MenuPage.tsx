@@ -22,8 +22,8 @@ export default function MenuPage() {
     >
       {/* Fixed Premium Animated Gold Background */}
       <div className="fixed inset-0 z-[-2] w-full h-full bg-black overflow-hidden">
-        {/* Floating Golden Shapes */}
-        {[...Array(6)].map((_, i) => (
+        {/* Floating Golden Shapes - Reduced for performance */}
+        {[...Array(3)].map((_, i) => (
           <div
             key={i}
             className={`
@@ -31,13 +31,14 @@ export default function MenuPage() {
         bg-linear-to-br from-[#FFD369]/50 to-[#FDB143]/50
         opacity-20
         animate-float-slow
+        will-change-transform
       `}
             style={{
-              width: `${50 + i * 40}px`,
-              height: `${50 + i * 40}px`,
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              animationDelay: `${i * 3}s`,
+              width: `${100 + i * 80}px`,
+              height: `${100 + i * 80}px`,
+              top: `${20 + i * 30}%`,
+              left: `${10 + i * 40}%`,
+              animationDelay: `${i * 5}s`,
             }}
           />
         ))}
@@ -52,13 +53,15 @@ export default function MenuPage() {
           <div className="relative">
             {/* Glow behind logo */}
             <div className="absolute inset-0 rounded-full
-                    bg-gradient-to-br from-[#FFD369]/50 via-[#FFD369]/30 to-[#FDB143]/50
-                    blur-3xl animate-glowPulse pointer-events-none z-[-1]" />
+                    bg-linear-to-br from-[#FFD369]/40 via-[#FFD369]/20 to-[#FDB143]/40
+                    blur-2xl animate-glowPulse pointer-events-none z-[-1]
+                    will-change-transform will-change-opacity" />
 
             <img
               src="/hamada.png"
               alt="Logo"
-              className="w-56 md:w-60 object-contain drop-shadow-[0_10px_40px_rgba(253,177,67,0.4)] animate-scalePulse"
+              className="w-56 md:w-60 object-contain drop-shadow-[0_10px_30px_rgba(253,177,67,0.3)] animate-scalePulse
+                         will-change-transform"
             />
           </div>
         </div>

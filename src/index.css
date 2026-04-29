@@ -296,3 +296,12 @@ body {
 .animate-scalePulse {
   animation: scalePulse 2s ease-in-out infinite;
 }
+
+/* GPU Optimization Utilities */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}

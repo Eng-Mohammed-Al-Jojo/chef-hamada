@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { db } from "../../firebase";
 import { ref, onValue } from "firebase/database";
 import CategorySection from "./CategorySection";
@@ -58,8 +58,14 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  const [toast] = useState<{ message: string; color: "green" | "red" } | null>(null);
+  const [toast, setToast] = useState<{ message: string; color: "green" | "red" } | null>(null);
   const [orderSystem, setOrderSystem] = useState<boolean>(true);
+  const [renderLimit, setRenderLimit] = useState(2); // Batch rendering limit
+
+  const showGlobalToast = (message: string, color: "green" | "red" = "green") => {
+    setToast({ message, color });
+    setTimeout(() => setToast(null), 2500);
+  };
 
   /* ================= Load Online ================= */
   useEffect(() => {
@@ -77,48 +83,64 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
     };
 
     const loadOnline = () => {
-      onValue(ref(db, "categories"), (snap) => {
-        const data = snap.val();
-        const cats = data
-          ? Object.entries(data).map(([id, v]: any) => ({
-            id,
-            ...v,
-            available: v.available !== false,
-          }))
-          : [];
-        cats.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
-        setCategories(cats);
-        if (firebaseLoaded) saveToLocal(cats, items, orderSystem);
-      });
+      const unsubs: (() => void)[] = [];
 
-      onValue(ref(db, "items"), (snap) => {
-        const data = snap.val();
-        const its = data
-          ? Object.entries(data).map(([id, v]: any) => ({
-            id,
-            ...v,
-          }))
-          : [];
-        setItems(its);
-        if (firebaseLoaded) saveToLocal(categories, its, orderSystem);
-      });
+      unsubs.push(
+        onValue(ref(db, "categories"), (snap) => {
+          const data = snap.val();
+          const cats = data
+            ? Object.entries(data).map(([id, v]: any) => ({
+              id,
+              ...v,
+              available: v.available !== false,
+            }))
+            : [];
+          cats.sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+          setCategories(cats);
+          if (firebaseLoaded) saveToLocal(cats, items, orderSystem);
+        })
+      );
 
-      onValue(ref(db, "settings/orderSystem"), (snap) => {
-        const val = snap.val();
-        setOrderSystem(val ?? true);
-        if (firebaseLoaded) saveToLocal(categories, items, val ?? true);
-      });
+      unsubs.push(
+        onValue(ref(db, "items"), (snap) => {
+          const data = snap.val();
+          const its = data
+            ? Object.entries(data).map(([id, v]: any) => ({
+              id,
+              ...v,
+            }))
+            : [];
+          setItems(its);
+          if (firebaseLoaded) saveToLocal(categories, its, orderSystem);
+        })
+      );
+
+      unsubs.push(
+        onValue(ref(db, "settings/orderSystem"), (snap) => {
+          const val = snap.val();
+          setOrderSystem(val ?? true);
+          if (firebaseLoaded) saveToLocal(categories, items, val ?? true);
+        })
+      );
 
       // Simple sync check to stop loading
-      onValue(ref(db, ".info/connected"), (snap) => {
-        if (snap.val() === true) {
-          setTimeout(() => finishFirebase(categories, items, orderSystem), 1000);
-        }
-      });
+      unsubs.push(
+        onValue(ref(db, ".info/connected"), (snap) => {
+          if (snap.val() === true) {
+            setTimeout(() => finishFirebase(categories, items, orderSystem), 1000);
+          }
+        })
+      );
+
+      return () => {
+        unsubs.forEach((unsub) => unsub());
+      };
     };
 
-    if (navigator.onLine) loadOnline();
-    else {
+    let cleanup: (() => void) | undefined;
+    if (navigator.onLine) {
+      cleanup = loadOnline();
+    } else {
       const cached = loadFromLocal();
       if (cached) {
         setCategories(cached.categories);
@@ -128,6 +150,11 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
         onLoadingChange?.(false);
       }
     }
+
+    return () => {
+      if (cleanup) cleanup();
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, []);
 
   useEffect(() => {
@@ -137,6 +164,31 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
 
   const availableCategories = categories.filter((cat) => cat.available);
   const scrollCategories = availableCategories.filter((cat) => items.some((i) => i.categoryId === cat.id));
+
+  // Pre-calculate items per category for better performance
+  const categoryItemsMap = useMemo(() => {
+    const map: Record<string, Item[]> = {};
+    items.forEach(item => {
+      if (!map[item.categoryId]) map[item.categoryId] = [];
+      map[item.categoryId].push(item);
+    });
+    return map;
+  }, [items]);
+
+  // Progressive rendering logic
+  useEffect(() => {
+    if (!loading && renderLimit < availableCategories.length) {
+      const timer = setTimeout(() => {
+        setRenderLimit(prev => Math.min(prev + 2, availableCategories.length));
+      }, 150); // Load 2 more categories every 150ms
+      return () => clearTimeout(timer);
+    }
+  }, [loading, renderLimit, availableCategories.length]);
+
+  // Reset limit when changing category tab
+  useEffect(() => {
+    setRenderLimit(2);
+  }, [activeCategory]);
 
   if (loading) {
     return (
@@ -278,9 +330,9 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
             >
               {(activeCategory
                 ? availableCategories.filter((c) => c.id === activeCategory)
-                : availableCategories
+                : availableCategories.slice(0, renderLimit)
               ).map((cat) => {
-                const catItems = items.filter((i) => i.categoryId === cat.id);
+                const catItems = categoryItemsMap[cat.id] || [];
                 if (!catItems.length) return null;
 
                 return (
@@ -289,6 +341,7 @@ export default function Menu({ onLoadingChange, onFeaturedCheck }: Props) {
                     category={cat}
                     items={catItems}
                     orderSystem={orderSystem}
+                    showGlobalToast={showGlobalToast}
                   />
                 );
               })}

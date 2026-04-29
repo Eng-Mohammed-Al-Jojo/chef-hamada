@@ -1,14 +1,16 @@
 import ItemRow from "./ItemRow";
 import type { Category, Item } from "./Menu";
 import { motion } from "framer-motion";
+import { memo } from "react";
 
 interface Props {
   category: Category;
   items: Item[];
   orderSystem: boolean;
+  showGlobalToast: (message: string, color?: "green" | "red") => void;
 }
 
-export default function CategorySection({ category, items, orderSystem }: Props) {
+const CategorySection = ({ category, items, orderSystem, showGlobalToast }: Props) => {
   return (
     <motion.section
       initial={{ opacity: 0 }}
@@ -32,9 +34,12 @@ export default function CategorySection({ category, items, orderSystem }: Props)
             key={item.id}
             item={item}
             orderSystem={orderSystem}
+            showGlobalToast={showGlobalToast}
           />
         ))}
       </div>
     </motion.section>
   );
-}
+};
+
+export default memo(CategorySection);

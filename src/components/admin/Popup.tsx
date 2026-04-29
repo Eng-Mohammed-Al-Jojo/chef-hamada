@@ -27,13 +27,6 @@ interface Props {
     itemIngredients?: string;
   }) => void;
   categories?: any;
-
-  resetPasswordPopup?: boolean;
-  setResetPasswordPopup?: (val: boolean) => void;
-  resetEmail?: string;
-  setResetEmail?: (val: string) => void;
-  resetMessage?: string;
-  handleResetPassword?: () => void;
   logout?: () => void;
 }
 
@@ -47,24 +40,17 @@ const Popup: React.FC<Props> = ({
   editItemValues,
   setEditItemValues,
   categories,
-  resetPasswordPopup,
-  setResetPasswordPopup,
-  resetEmail,
-  setResetEmail,
-  resetMessage,
-  handleResetPassword,
   logout,
 }) => {
-  if (!popup.type && !resetPasswordPopup) return null;
+  if (!popup.type) return null;
 
   const close = () => {
     setPopup({ type: null });
-    setResetPasswordPopup && setResetPasswordPopup(false);
   };
 
   return (
     <AnimatePresence>
-      {(popup.type || resetPasswordPopup) && (
+      {popup.type && (
         <>
           {/* Backdrop */}
           <motion.div
@@ -304,50 +290,6 @@ const Popup: React.FC<Props> = ({
                   </div>
                 </div>
               )}
-
-              {/* ===== Reset Password ===== */}
-              {resetPasswordPopup && (
-                <div className="text-center py-4">
-                  <div className="w-20 h-20 bg-[#FDB143]/10 rounded-full flex items-center justify-center mx-auto mb-6 text-[#FDB143]">
-                    <FiAlertTriangle size={40} />
-                  </div>
-                  <h3 className="text-2xl font-black text-white mb-2">إعادة تعيين كلمة المرور</h3>
-                  <p className="text-white/40 mb-6 font-light text-sm">سيتم إرسال رابط التغيير إلى بريدك الإلكتروني المسجل</p>
-
-                  <input
-                    type="email"
-                    placeholder="أدخل بريدك الإلكتروني"
-                    className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-white/20 focus:outline-none focus:border-[#FDB143]/50 transition-all font-light mb-4 text-center"
-                    value={resetEmail}
-                    onChange={(e) => setResetEmail && setResetEmail(e.target.value)}
-                  />
-
-                  {resetMessage && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-xs text-[#FDB143] font-bold mb-6 text-center"
-                    >
-                      {resetMessage}
-                    </motion.p>
-                  )}
-
-                  <div className="flex gap-4">
-                    <button
-                      onClick={handleResetPassword}
-                      className="flex-1 py-4 rounded-2xl bg-[#FDB143] text-black font-black hover:scale-[1.02] transition-all shadow-lg"
-                    >
-                      إرسال الرابط
-                    </button>
-                    <button
-                      onClick={close}
-                      className="flex-1 py-4 rounded-2xl bg-white/5 text-white/60 hover:text-white transition-all font-bold"
-                    >
-                      تراجع
-                    </button>
-                  </div>
-                </div>
-              )}
             </motion.div>
           </div>
         </>
@@ -357,3 +299,4 @@ const Popup: React.FC<Props> = ({
 };
 
 export default Popup;
+
